@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 class email_model extends CI_Model {
 
@@ -10,118 +10,129 @@ class email_model extends CI_Model {
 	public function get_leave(){
 
 		$current_time = strtotime(date('m/d/y h:i a'));
-		$accepted_time_start_am = strtotime(date('m/d/y'). ' 8:00 am');
-		$accepted_time_start_pm = strtotime(date('m/d/y'). ' 5:00 pm');
-		$accepted_time_end_am = strtotime(date('m/d/y'). ' 5:00 pm');
-		$accepted_time_end_pm = strtotime(date('m/d/y'). ' 8:00 pm');
+		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
+		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
+		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
+		$pm_end = strtotime(date('m/d/y'). ' 7:59 am');
 
-		if ( $current_time >= $accepted_time_start_am && $current_time <= $accepted_time_start_pm) {
-			$time_start = date('m/d/y'). ' 8:00 am';
+		if ( $current_time >= $am_start && $current_time <= $am_end) {
+			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 5:00 pm';
+			$time_end = date('m/d/y'). ' 4:00 pm';
 			$accepted_datetime_end = strtotime($time_end);
-		}elseif ($current_time >= $accepted_time_end_am && $current_time <= $accepted_time_end_pm) {
-			$time_start = date('m/d/y'). ' 4:00 pm';
+		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {
+			$time_start = date('m/d/y'). ' 4:01 pm';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 8:00 pm';
+			$time_end = date('m/d/y'). ' 11:59 pm';
 			$accepted_datetime_end = strtotime($time_end);
 		}
 
+		if(isset($accepted_datetime_start) || isset($accepted_datetime_end)){
+			$this->db->select('tbl_leaves.id,
+							tbl_leaves.type,
+							tbl_leaves.reason,
+							tbl_leaves.remark,
+							tbl_leaves.date_from,
+							tbl_leaves.date_to,
+							tbl_employee_info.emp_code,
+							tbl_employee_info.department,
+							tbl_person_info.firstname,
+							tbl_person_info.middlename,
+							tbl_person_info.lastname,
+							tbl_person_info.personal_email,
+							tbl_departments.dep_abbr
+							')
+			->from('tbl_leaves')
+			->join('tbl_employee_info', 'tbl_employee_info.emp_id = tbl_leaves.emp_id')
+			->join('tbl_person_info', 'tbl_person_info.id = tbl_leaves.emp_id')
+			->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id')
+			->where('date_filed >=',$accepted_datetime_start)
+			->where('date_filed <=', $accepted_datetime_end);
 
-		$this->db->select('tbl_leaves.id,
-						   tbl_leaves.type,
-						   tbl_leaves.reason,
-						   tbl_leaves.remark,
-						   tbl_leaves.date_from,
-						   tbl_leaves.date_to,
-						   tbl_employee_info.emp_code,
-						   tbl_employee_info.department,
-						   tbl_person_info.firstname,
-						   tbl_person_info.middlename,
-						   tbl_person_info.lastname,
-						   tbl_person_info.personal_email,
-						   tbl_departments.dep_abbr
-						   ')
-				 ->from('tbl_leaves')
-				 ->join('tbl_employee_info', 'tbl_employee_info.emp_id = tbl_leaves.emp_id')
-				 ->join('tbl_person_info', 'tbl_person_info.id = tbl_leaves.emp_id')
-				 ->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id')
-		 		 ->where('date_filed >=',$accepted_datetime_start)
-		 		 ->where('date_filed <=', $accepted_datetime_end);
-		$leave_data = $this->db->get()->result_array();
+			$leave_data = $this->db->get()->result_array();
+			return $leave_data;
 
-		return $leave_data;
+		}else {
+			return '';
+		}
+
 	}
 
 	public function get_late(){
 
 		$current_time = strtotime(date('m/d/y h:i a'));
-		$accepted_time_start_am = strtotime(date('m/d/y'). ' 8:00 am');
-		$accepted_time_start_pm = strtotime(date('m/d/y'). ' 5:00 pm');
-		$accepted_time_end_am = strtotime(date('m/d/y'). ' 5:00 pm');
-		$accepted_time_end_pm = strtotime(date('m/d/y'). ' 8:00 pm');
+		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
+		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
+		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
+		$pm_end = strtotime(date('m/d/y'). ' 11:59 pm');
 
-		if ( $current_time >= $accepted_time_start_am && $current_time <= $accepted_time_start_pm) {
-			$time_start = date('m/d/y'). ' 8:00 am';
+		if ( $current_time >= $am_start && $current_time <= $am_end) {
+			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 5:00 pm';
+			$time_end = date('m/d/y'). ' 4:00 pm';
 			$accepted_datetime_end = strtotime($time_end);
-		}elseif ($current_time >= $accepted_time_end_am && $current_time <= $accepted_time_end_pm) {
-			$time_start = date('m/d/y'). ' 4:00 pm';
+		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {
+			$time_start = date('m/d/y'). ' 4:01 pm';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 8:00 pm';
+			$time_end = date('m/d/y'). ' 11:59 pm';
 			$accepted_datetime_end = strtotime($time_end);
 		}
 
-		$this->db->select('*, tbl_daily_attendance.id as tda_id,
-						   tbl_employee_info.emp_code,
-						   tbl_employee_info.department,
-						   tbl_person_info.firstname,
-						   tbl_person_info.middlename,
-						   tbl_person_info.lastname,
-						   tbl_person_info.personal_email,
-						   tbl_departments.dep_abbr')
-				 ->from('tbl_daily_attendance')
-				 ->join('tbl_employee_info', 'tbl_employee_info.emp_id = tbl_daily_attendance.emp_id')
-				 ->join('tbl_person_info', 'tbl_person_info.id = tbl_daily_attendance.emp_id')
-				 ->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id')
-				 ->where('tbl_daily_attendance.type', 'Late')
-				 ->where('tbl_daily_attendance.reason <>', '')
-				 ->where('date_filed >=',$accepted_datetime_start)
-		 		 ->where('date_filed <=', $accepted_datetime_end);
+		if(isset($accepted_datetime_start) || isset($accepted_datetime_end)){
+			$this->db->select('*, tbl_daily_attendance.id as tda_id,
+					   tbl_employee_info.emp_code,
+					   tbl_employee_info.department,
+					   tbl_person_info.firstname,
+					   tbl_person_info.middlename,
+					   tbl_person_info.lastname,
+					   tbl_person_info.personal_email,
+					   tbl_departments.dep_abbr')
+			 ->from('tbl_daily_attendance')
+			 ->join('tbl_employee_info', 'tbl_employee_info.emp_id = tbl_daily_attendance.emp_id')
+			 ->join('tbl_person_info', 'tbl_person_info.id = tbl_daily_attendance.emp_id')
+			 ->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id')
+			 ->where('tbl_daily_attendance.type', 'Late')
+			 ->where('tbl_daily_attendance.reason <>', '')
+			 ->where('date_filed >=',$accepted_datetime_start)
+	 		 ->where('date_filed <=', $accepted_datetime_end);
 
-		$attend_late = $this->db->get()->result_array();
+			$attend_late = $this->db->get()->result_array();
+			return $attend_late;
+		} else {
+			return '';
+		}
+
 		
-		return $attend_late;
 	}
 
 	public function get_late_no_notif(){
 
 		$current_time = strtotime(date('m/d/y h:i a'));
-		$accepted_time_start_am = strtotime(date('m/d/y'). ' 8:00 am');
-		$accepted_time_start_pm = strtotime(date('m/d/y'). ' 5:00 pm');
-		$accepted_time_end_am = strtotime(date('m/d/y'). ' 5:00 pm');
-		$accepted_time_end_pm = strtotime(date('m/d/y'). ' 8:00 pm');
+		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
+		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
+		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
+		$pm_end = strtotime(date('m/d/y'). ' 11:59 pm');
 
-		if ( $current_time >= $accepted_time_start_am && $current_time <= $accepted_time_start_pm) {
-			$time_start = date('m/d/y'). ' 8:00 am';
+		if ( $current_time >= $am_start && $current_time <= $am_end) {
+			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 5:00 pm';
+			$time_end = date('m/d/y'). ' 4:00 pm';
 			$accepted_datetime_end = strtotime($time_end);
-		}elseif ($current_time >= $accepted_time_end_am && $current_time <= $accepted_time_end_pm) {
-			$time_start = date('m/d/y'). ' 4:00 pm';
+		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {
+			$time_start = date('m/d/y'). ' 4:01 pm';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 8:00 pm';
+			$time_end = date('m/d/y'). ' 11:59 pm';
 			$accepted_datetime_end = strtotime($time_end);
 		}
 
-		$this->db->select('*, tbl_daily_attendance.id as tda_id,
+		if(isset($accepted_datetime_start) || isset($accepted_datetime_end)){
+			$this->db->select('*, tbl_daily_attendance.id as tda_id,
 						   tbl_employee_info.emp_code,
 						   tbl_employee_info.department,
 						   tbl_person_info.firstname,
@@ -138,34 +149,37 @@ class email_model extends CI_Model {
 				 ->where('date_filed >=',$accepted_datetime_start)
 		 		 ->where('date_filed <=', $accepted_datetime_end);
 
-		$attend_late_no_notif = $this->db->get()->result_array();
-		
-		return $attend_late_no_notif;
+			$attend_late_no_notif = $this->db->get()->result_array();
+			return $attend_late_no_notif;
+		} else {
+			return '';
+		}
 	}
 
 	public function get_absent(){
 
 		$current_time = strtotime(date('m/d/y h:i a'));
-		$accepted_time_start_am = strtotime(date('m/d/y'). ' 8:00 am');
-		$accepted_time_start_pm = strtotime(date('m/d/y'). ' 5:00 pm');
-		$accepted_time_end_am = strtotime(date('m/d/y'). ' 5:00 pm');
-		$accepted_time_end_pm = strtotime(date('m/d/y'). ' 8:00 pm');
+		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
+		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
+		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
+		$pm_end = strtotime(date('m/d/y'). ' 11:59 pm');
 
-		if ( $current_time >= $accepted_time_start_am && $current_time <= $accepted_time_start_pm) {
-			$time_start = date('m/d/y'). ' 8:00 am';
+		if ( $current_time >= $am_start && $current_time <= $am_end) {
+			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 5:00 pm';
+			$time_end = date('m/d/y'). ' 4:00 pm';
 			$accepted_datetime_end = strtotime($time_end);
-		}elseif ($current_time >= $accepted_time_end_am && $current_time <= $accepted_time_end_pm) {
-			$time_start = date('m/d/y'). ' 4:00 pm';
+		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {
+			$time_start = date('m/d/y'). ' 4:01 pm';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 8:00 pm';
+			$time_end = date('m/d/y'). ' 11:59 pm';
 			$accepted_datetime_end = strtotime($time_end);
 		}
 
-		$this->db->select('*, tbl_daily_attendance.id as tda_id,
+		if(isset($accepted_datetime_start) || isset($accepted_datetime_end)){
+			$this->db->select('*, tbl_daily_attendance.id as tda_id,
 						   tbl_employee_info.emp_code,
 						   tbl_employee_info.department,
 						   tbl_person_info.firstname,
@@ -181,34 +195,39 @@ class email_model extends CI_Model {
 				 ->where('date_filed >=',$accepted_datetime_start)
 		 		 ->where('date_filed <=', $accepted_datetime_end);
 
-		$attend_absent = $this->db->get()->result_array();
+			$attend_absent = $this->db->get()->result_array();
+			return $attend_absent;
+		}else {
+			return '';
+		}
+
 		
-		return $attend_absent;
 	}
 
 	public function get_awol(){
 
 		$current_time = strtotime(date('m/d/y h:i a'));
-		$accepted_time_start_am = strtotime(date('m/d/y'). ' 8:00 am');
-		$accepted_time_start_pm = strtotime(date('m/d/y'). ' 5:00 pm');
-		$accepted_time_end_am = strtotime(date('m/d/y'). ' 4:00 pm');
-		$accepted_time_end_pm = strtotime(date('m/d/y'). ' 8:00 pm');
+		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
+		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
+		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
+		$pm_end = strtotime(date('m/d/y'). ' 11:59 pm');
 
-		if ( $current_time >= $accepted_time_start_am && $current_time <= $accepted_time_start_pm) {
-			$time_start = date('m/d/y'). ' 8:00 am';
+		if ( $current_time >= $am_start && $current_time <= $am_end) {
+			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 5:00 pm';
+			$time_end = date('m/d/y'). ' 4:00 pm';
 			$accepted_datetime_end = strtotime($time_end);
-		}elseif ($current_time >= $accepted_time_end_am && $current_time <= $accepted_time_end_pm) {
-			$time_start = date('m/d/y'). ' 4:00 pm';
+		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {
+			$time_start = date('m/d/y'). ' 4:01 pm';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 8:00 pm';
+			$time_end = date('m/d/y'). ' 11:59 pm';
 			$accepted_datetime_end = strtotime($time_end);
 		}
 
-		$this->db->select('*, tbl_daily_attendance.id as tda_id,
+		if(isset($accepted_datetime_start) || isset($accepted_datetime_end)){
+			$this->db->select('*, tbl_daily_attendance.id as tda_id,
 						   tbl_employee_info.emp_code,
 						   tbl_employee_info.department,
 						   tbl_person_info.firstname,
@@ -224,9 +243,11 @@ class email_model extends CI_Model {
 				 ->where('date_filed >=',$accepted_datetime_start)
 		 		 ->where('date_filed <=', $accepted_datetime_end);
 
-		$attend_awol = $this->db->get()->result_array();
-		
-		return $attend_awol;
+			$attend_awol = $this->db->get()->result_array();
+			return $attend_awol;
+		} else {
+			return '';
+		}
 	}
 
 	public function get_u_details($user){
@@ -261,7 +282,7 @@ class email_model extends CI_Model {
 			'content' =>$report['content']);
 
 		$this->db->insert('tbl_attendance_report_detail', $report_body);
-		
+
 	}
 
 	public function getReportTable(){
@@ -304,7 +325,7 @@ class email_model extends CI_Model {
 		/******************************Total Counts per Department*******************************/
 		$total_head = $a['headcount'] + $csd_head_combine + $c['headcount'] + $ga_head_combine + $f['headcount'] + $g['headcount'] + $h['headcount'] + $i['headcount'] + $j['headcount'] + $k['headcount'] + $l['headcount'] + $m['headcount'];
 		$total_ontime = $a['ontimetotal'] + $csd_ontime_combine + $c['ontimetotal'] + $ga_ontime_combine + $f['ontimetotal'] + $g['ontimetotal'] + $h['ontimetotal'] + $i['ontimetotal'] + $j['ontimetotal'] + $k['ontimetotal'] + $l['ontimetotal'] + $m['ontimetotal'];
-		$total_late = $a['latetotal'] + $csd_late_combine + $c['latetotal'] + $ga_late_combine + $f['latetotal'] + $g['leavetotal'] + $h['leavetotal'] + $i['leavetotal'] + $j['leavetotal'] + $k['leavetotal'] + $l['leavetotal'] + $m['leavetotal'];
+		$total_late = $a['latetotal'] + $csd_late_combine + $c['latetotal'] + $ga_late_combine + $f['latetotal'] + $g['latetotal'] + $h['latetotal'] + $i['latetotal'] + $j['latetotal'] + $k['latetotal'] + $l['latetotal'] + $m['latetotal'];
 		$total_awol = $a['awoltotal'] + $csd_awol_combine + $c['awoltotal'] + $ga_awol_combine + $f['awoltotal'] + $g['awoltotal'] + $h['awoltotal'] + $i['awoltotal'] + $j['awoltotal'] + $k['awoltotal'] + $l['awoltotal'] + $m['awoltotal'];
 		$total_absent = $a['absenttotal'] + $csd_absent_combine + $c['absenttotal'] + $ga_absent_combine + $f['absenttotal'] + $g['absenttotal'] + $h['absenttotal'] + $i['absenttotal'] + $j['absenttotal'] + $k['absenttotal'] + $l['absenttotal'] + $m['absenttotal'];
 		$total_leave = $a['leavetotal'] + $csd_leave_combine + $c['leavetotal'] + $ga_leave_combine + $f['leavetotal'] + $g['leavetotal'] + $h['leavetotal'] + $i['leavetotal'] + $j['leavetotal'] + $k['leavetotal'] + $l['leavetotal'] + $m['leavetotal'];
@@ -320,7 +341,7 @@ class email_model extends CI_Model {
 		$leave_percent = round(($total_leave / $total_head) * 100);
 		$offset_percent = round(($total_offset / $total_head) * 100);
 		$restday_percent = round(($total_restday / $total_head) * 100);
-	
+
 		$reportTable = '<table border="1" style="text-align:center"><tr style="font-weight:bold"><td width="20%">Team</td><td width="10%">Total Head Count</td><td width="10%">Total On Time</td><td width="10%">Total Late</td><td width="10%">Total On AWOL</td><td width="10%">Total Absent</td><td width="10%">Total On Leave</td><td width="10%">Total On Off-set</td><td width="10%">Total On Restday</td></tr>';
 		$reportTable .= '<tr><td>Circus-Web Design 1</td><td>'.$j['headcount'].'</td><td>'.$j['ontimetotal'].'</td><td>'.$j['latetotal'].'</td><td>'.$j['awoltotal'].'</td><td>'.$j['absenttotal'].'</td><td>'.$j['leavetotal'].'</td><td>'.$j['offsettotal'].'</td><td>'.$j['restdaytotal'].'</td></tr>';
 		$reportTable .= '<tr><td>Circus-Web Design 2</td><td>'.$k['headcount'].'</td><td>'.$k['ontimetotal'].'</td><td>'.$k['latetotal'].'</td><td>'.$k['awoltotal'].'</td><td>'.$k['absenttotal'].'</td><td>'.$k['leavetotal'].'</td><td>'.$k['offsettotal'].'</td><td>'.$k['restdaytotal'].'</td></tr>';
@@ -328,7 +349,7 @@ class email_model extends CI_Model {
 	 	$reportTable .= '<tr><td>Circus-SWAT</td><td>'.$f['headcount'].'</td><td>'.$f['ontimetotal'].'</td><td>'.$f['latetotal'].'</td><td>'.$f['awoltotal'].'</td><td>'.$f['absenttotal'].'</td><td>'.$f['leavetotal'].'</td><td>'.$f['offsettotal'].'</td><td>'.$f['restdaytotal'].'</td></tr>';
 	 	$reportTable .= '<tr><td>Circus-Illustrator</td><td>'.$g['headcount'].'</td><td>'.$g['ontimetotal'].'</td><td>'.$g['latetotal'].'</td><td>'.$g['awoltotal'].'</td><td>'.$g['absenttotal'].'</td><td>'.$g['leavetotal'].'</td><td>'.$g['offsettotal'].'</td><td>'.$g['restdaytotal'].'</td></tr>';
 	 	$reportTable .= '<tr><td>CIRCUS-GA</td><td>'.$ga_head_combine.'</td><td>'.$ga_ontime_combine.'</td><td>'.$ga_late_combine.'</td><td>'.$ga_awol_combine.'</td><td>'.$ga_absent_combine.'</td><td>'.$ga_leave_combine.'</td><td>'.$ga_offset_combine.'</td><td>'.$ga_restday_combine.'</td></tr>';
-	 	
+
 	 	$reportTable .= '<tr><td>HalloHallo Team 1</td><td>'.$l['headcount'].'</td><td>'.$l['ontimetotal'].'</td><td>'.$l['latetotal'].'</td><td>'.$l['awoltotal'].'</td><td>'.$l['absenttotal'].'</td><td>'.$l['leavetotal'].'</td><td>'.$l['offsettotal'].'</td><td>'.$l['restdaytotal'].'</td></tr>';
 		$reportTable .= '<tr><td>HalloHallo Team 2</td><td>'.$m['headcount'].'</td><td>'.$m['ontimetotal'].'</td><td>'.$m['latetotal'].'</td><td>'.$m['awoltotal'].'</td><td>'.$m['absenttotal'].'</td><td>'.$m['leavetotal'].'</td><td>'.$m['offsettotal'].'</td><td>'.$m['restdaytotal'].'</td></tr>';
 	 	$reportTable .= '<tr><td>HHI-SWAT</td><td>'.$h['headcount'].'</td><td>'.$h['ontimetotal'].'</td><td>'.$h['latetotal'].'</td><td>'.$h['awoltotal'].'</td><td>'.$h['absenttotal'].'</td><td>'.$h['leavetotal'].'</td><td>'.$h['offsettotal'].'</td><td>'.$h['restdaytotal'].'</td></tr>';
@@ -336,15 +357,13 @@ class email_model extends CI_Model {
 	 	$reportTable .= '<tr><td>HHI-WD</td><td>'.$i['headcount'].'</td><td>'.$i['ontimetotal'].'</td><td>'.$i['latetotal'].'</td><td>'.$i['awoltotal'].'</td><td>'.$i['absenttotal'].'</td><td>'.$i['leavetotal'].'</td><td>'.$i['offsettotal'].'</td><td>'.$i['restdaytotal'].'</td></tr>';
 	 	$reportTable .= '<tr><td>Tavolozza Team</td><td>'.$c['headcount'].'</td><td>'.$c['ontimetotal'].'</td><td>'.$c['latetotal'].'</td><td>'.$c['awoltotal'].'</td><td>'.$c['absenttotal'].'</td><td>'.$c['leavetotal'].'</td><td>'.$c['offsettotal'].'</td><td>'.$c['restdaytotal'].'</td></tr>';
 
-
-
 	 	$reportTable .= '<tr style="font-weight:bold"><td>Total</td><td>'.$total_head.'</td><td>'.$total_ontime.'</td><td>'.$total_late.'</td><td>'.$total_awol.'</td><td>'.$total_absent.'</td><td>'.$total_leave.'</td><td>'.$total_offset.'</td><td>'.$total_restday.'</td></tr>';
 	 	$reportTable .= '<tr><td>Percentage</td><td>100%</td><td>'.$ontime_percent.'%</td><td>'.$late_percent.'%</td><td>'.$awol_percent.'%</td><td>'.$absent_percent.'%</td><td>'.$leave_percent.'%</td><td>'.$offset_percent.'%</td><td>'.$restday_percent.'%</td></tr>';
-	 	
+
 	 	$reportTable .= '</table>';
 		return $reportTable;
 
-	}	
+	}
 
 	function getAllCounts($dep_id, $shift=1){
 		$datenow = date('Y-m-d');
@@ -373,7 +392,7 @@ class email_model extends CI_Model {
 										->where($where)
 										->where('tbl_daily_attendance.type', 'Late')
 										->get()->num_rows();
-										
+
 		$result['awoltotal'] = $this->db->select('*')
 										 ->from('tbl_employee_info')
 										 ->join('tbl_daily_attendance', 'tbl_daily_attendance.emp_id = tbl_employee_info.emp_id')
@@ -392,14 +411,14 @@ class email_model extends CI_Model {
 										 ->where($where)
 										 ->where('tbl_daily_attendance.type', 'Absent')
 										 ->get()->num_rows();
-		
+
 		$result['leavetotal'] = $this->db->select('*')
 										 ->from('tbl_employee_info')
 										 ->join('tbl_leaves', 'tbl_leaves.emp_id = tbl_employee_info.emp_id')
 										 ->where('tbl_employee_info.department', $dep_id)
 										 ->where($where)
 										 ->where('tbl_leaves.date_from', $datenow)
-										 ->get()->num_rows();	
+										 ->get()->num_rows();
 
 		$result['offsettotal'] = $this->db->select('*')
 										  ->from('tbl_employee_info')
@@ -417,7 +436,7 @@ class email_model extends CI_Model {
 		 								   ->where('tbl_employee_info.rest_day', $day)
 		 								   ->get()->num_rows();
 
-		$result['ontimetotal'] = $result['headcount'] - ($result['latetotal'] + $result['awoltotal'] + $result['absenttotal'] + $result['leavetotal'] + $result['offsettotal'] + $result['restdaytotal']);  
+		$result['ontimetotal'] = $result['headcount'] - ($result['latetotal'] + $result['awoltotal'] + $result['absenttotal'] + $result['leavetotal'] + $result['offsettotal'] + $result['restdaytotal']);
 
 
 		return $result;
