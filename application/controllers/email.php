@@ -10,7 +10,7 @@ class Email extends CI_Controller
     {
 
         parent::__construct();
-        date_default_timezone_set('Asia/Singapore');
+        date_default_timezone_set('Asia/Manila');
         if(isset($this->session->userdata['usersession']))
 		{
 			$username = $this->session->userdata['usersession'];
@@ -45,31 +45,30 @@ class Email extends CI_Controller
 
 			$leave_data = $this->email_model->get_leave();
 		
-			if($leave_data != ''){
-				$count = 1;
-				$data['message_leave'] = '';
+			$count = 1;
+			$data['message_leave'] = '';
 
-				foreach ($leave_data as $key => $value) {
-					$sender = $leave_data[$key]["personal_email"];
-					$firstname = $leave_data[$key]["firstname"];
-					$lastname = $leave_data[$key]["lastname"];
+			foreach ($leave_data as $key => $value) {
+				$sender = $leave_data[$key]["personal_email"];
+				$firstname = $leave_data[$key]["firstname"];
+				$lastname = $leave_data[$key]["lastname"];
 
-					if ($leave_data[$key]["date_from"] != null || $leave_data[$key]["date_from"] != '') {
-						$date_from = '(' . date("F j".", "."Y", strtotime($leave_data[$key]["date_from"])) . ' - ';
-					}else{
-						$date_from = '';
-					}
-
-					if ($leave_data[$key]["date_to"] != null || $leave_data[$key]["date_to"] != '') {
-						$date_to = date("F j".", "."Y", strtotime($leave_data[$key]["date_to"])) . ')';
-					}else{
-						$date_to = '';
-					}
-
-					$data['message_leave'] .= $count . ". " . $leave_data[$key]["firstname"] .' '. $leave_data[$key]["lastname"] ." -<b> " .  $leave_data[$key]["dep_abbr"] . "</b> - " . $leave_data[$key]["type"] . " Leave" . " - " . $leave_data[$key]["reason"] . $date_from . $date_to . "<br/>";
-					$count++;
+				if ($leave_data[$key]["date_from"] != null || $leave_data[$key]["date_from"] != '') {
+					$date_from = '(' . date("F j".", "."Y", strtotime($leave_data[$key]["date_from"])) . ' - ';
+				}else{
+					$date_from = '';
 				}
+
+				if ($leave_data[$key]["date_to"] != null || $leave_data[$key]["date_to"] != '') {
+					$date_to = date("F j".", "."Y", strtotime($leave_data[$key]["date_to"])) . ')';
+				}else{
+					$date_to = '';
+				}
+
+				$data['message_leave'] .= $count . ". " . $leave_data[$key]["firstname"] .' '. $leave_data[$key]["lastname"] ." -<b> " .  $leave_data[$key]["dep_abbr"] . "</b> - " . $leave_data[$key]["type"] . " Leave" . " - " . $leave_data[$key]["reason"] . $date_from . $date_to . "<br/>";
+				$count++;
 			}
+		
 
 		
 			$late_data = $this->email_model->get_late();
@@ -97,6 +96,7 @@ class Email extends CI_Controller
 			
 
 			$late_no_notif_data = $this->email_model->get_late_no_notif();
+			
 
 			if($late_no_notif_data != ''){
 				$count = 1;
@@ -154,7 +154,7 @@ class Email extends CI_Controller
 			}
 		
 		
-			if($leave_data == '' || $late_data == '' || $late_no_notif_data == '' || $absent_data == '' || $awol_data == ''){
+			if($late_data == '' || $late_no_notif_data == '' || $absent_data == '' || $awol_data == ''){
 					$this->load->view('admin/mail_report_404');
 			} else {
 					$this->load->view('common/header', $data);

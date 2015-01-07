@@ -17,7 +17,7 @@ class employee extends CI_Controller {
 			$this->db->where('tbl_logins.username', $username);
 			$this->name = $this->db->get()->row_array();
 		}
-		date_default_timezone_set('Asia/Singapore');
+		date_default_timezone_set('Asia/Manila');
 	}
 
 	public function employeeview($name=null){

@@ -6,7 +6,7 @@ class admin extends CI_Controller {
 		$this->output->nocache();
 		isLoggedIn();
         $this->load->library("pagination");
-		date_default_timezone_set('Asia/Singapore');
+		date_default_timezone_set('Asia/Manila');
 		if(isset($this->session->userdata['usersession']))
 		{
 			$username = $this->session->userdata['usersession'];

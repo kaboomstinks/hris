@@ -4,59 +4,42 @@ class email_model extends CI_Model {
 
 	public function __construct(){
 		parent::__construct();
-		date_default_timezone_set('Asia/Singapore');
+		date_default_timezone_set('Asia/Manila');
 	}
 
 	public function get_leave(){
 
 		$current_time = strtotime(date('m/d/y h:i a'));
+		$current_date = date('Y-m-d');
+
 		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
 		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
 		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
-		$pm_end = strtotime(date('m/d/y'). ' 7:59 am');
+		$pm_end = strtotime(date('m/d/y'). ' 11:59 pm');
 
-		if ( $current_time >= $am_start && $current_time <= $am_end) {
-			$time_start = date('m/d/y'). ' 7:00 am';
-			$accepted_datetime_start = strtotime($time_start);
-
-			$time_end = date('m/d/y'). ' 4:00 pm';
-			$accepted_datetime_end = strtotime($time_end);
-		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {
-			$time_start = date('m/d/y'). ' 4:01 pm';
-			$accepted_datetime_start = strtotime($time_start);
-
-			$time_end = date('m/d/y'). ' 11:59 pm';
-			$accepted_datetime_end = strtotime($time_end);
-		}
-
-		if(isset($accepted_datetime_start) || isset($accepted_datetime_end)){
-			$this->db->select('tbl_leaves.id,
-							tbl_leaves.type,
-							tbl_leaves.reason,
-							tbl_leaves.remark,
-							tbl_leaves.date_from,
-							tbl_leaves.date_to,
-							tbl_employee_info.emp_code,
-							tbl_employee_info.department,
-							tbl_person_info.firstname,
-							tbl_person_info.middlename,
-							tbl_person_info.lastname,
-							tbl_person_info.personal_email,
-							tbl_departments.dep_abbr
-							')
-			->from('tbl_leaves')
-			->join('tbl_employee_info', 'tbl_employee_info.emp_id = tbl_leaves.emp_id')
-			->join('tbl_person_info', 'tbl_person_info.id = tbl_leaves.emp_id')
-			->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id')
-			->where('date_filed >=',$accepted_datetime_start)
-			->where('date_filed <=', $accepted_datetime_end);
-
-			$leave_data = $this->db->get()->result_array();
-			return $leave_data;
-
-		}else {
-			return '';
-		}
+		$this->db->select('tbl_leaves.id,
+						tbl_leaves.type,
+						tbl_leaves.reason,
+						tbl_leaves.remark,
+						tbl_leaves.date_from,
+						tbl_leaves.date_to,
+						tbl_employee_info.emp_code,
+						tbl_employee_info.department,
+						tbl_person_info.firstname,
+						tbl_person_info.middlename,
+						tbl_person_info.lastname,
+						tbl_person_info.personal_email,	
+						tbl_departments.dep_abbr
+						')
+		->from('tbl_leaves')
+		->join('tbl_employee_info', 'tbl_employee_info.emp_id = tbl_leaves.emp_id')
+		->join('tbl_person_info', 'tbl_person_info.id = tbl_leaves.emp_id')
+		->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id')
+		->where('date_from <=', $current_date)
+		->where('date_to >=', $current_date);
+		
+		$leave_data = $this->db->get()->result_array();
+		return $leave_data;
 
 	}
 
@@ -417,7 +400,8 @@ class email_model extends CI_Model {
 										 ->join('tbl_leaves', 'tbl_leaves.emp_id = tbl_employee_info.emp_id')
 										 ->where('tbl_employee_info.department', $dep_id)
 										 ->where($where)
-										 ->where('tbl_leaves.date_from', $datenow)
+										 ->where('tbl_leaves.date_from <=', $datenow)
+										 ->where('tbl_leaves.date_to >=', $datenow)
 										 ->get()->num_rows();
 
 		$result['offsettotal'] = $this->db->select('*')
