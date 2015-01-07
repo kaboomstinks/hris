@@ -12,11 +12,6 @@ class email_model extends CI_Model {
 		$current_time = strtotime(date('m/d/y h:i a'));
 		$current_date = date('Y-m-d');
 
-		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
-		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
-		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
-		$pm_end = strtotime(date('m/d/y'). ' 11:59 pm');
-
 		$this->db->select('tbl_leaves.id,
 						tbl_leaves.type,
 						tbl_leaves.reason,
