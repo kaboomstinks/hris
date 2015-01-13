@@ -66,6 +66,11 @@
 							<td width="80px"><?php echo date('m/d/Y h:i', $attendance->date_filed); ?></td>
 							<td width="80px"><?php echo $attendance->firstname.' '.$attendance->middlename.' '.$attendance->lastname; ?></td>
 							<td style="max-width: 80px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap; "><?php echo $attendance->reason; ?></td>
+							<?php if ($attendance->type == "Late") { ?>
+								<td>
+									<input type="checkbox" data-id=<?php echo $attendance->emp_id; ?> name="is_arrived" value="<?php echo $attendance->status; ?>">
+								</td>
+							<?php } ?>
 							<td colspan="2" align="center">
 								<a class="editlink btn btn-warning"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
 								&nbsp;
@@ -185,41 +190,41 @@ $(document).ready(function(){
 	$('#manage2 a, #manage a').css('padding', '10px 5px').css('font-size', '12px');
 
 
-	$('.checkbox').each(function(index, value){
-	    if ($(this).val() == '1') {
-			$(this).attr('checked', true);
-			$(this).siblings('.zero').attr('disabled', true);
-		}else {
-			$(this).removeAttr('checked');
-			$(this).siblings('.zero').removeAttr('disabled');
-		};
-	});
+	// $('.checkbox').each(function(index, value){
+	//     if ($(this).val() == '1') {
+	// 		$(this).attr('checked', true);
+	// 		$(this).siblings('.zero').attr('disabled', true);
+	// 	}else {
+	// 		$(this).removeAttr('checked');
+	// 		$(this).siblings('.zero').removeAttr('disabled');
+	// 	};
+	// });
 
-	$('.checkbox').each(function(index, value){
-		$(this).on('click', function(){
-			if($(this).is(":checked")) {
-				$(this).val('1');
-			}else{
-				$(this).val('0');
-			};
+	// $('.checkbox').each(function(index, value){
+	// 	$(this).on('click', function(){
+	// 		if($(this).is(":checked")) {
+	// 			$(this).val('1');
+	// 		}else{
+	// 			$(this).val('0');
+	// 		};
 
-			if ($(this).val() == '1') {
-				$(this).attr('checked', true);
-				$(this).siblings('.zero').attr('disabled', true);
-			}else {
-				$(this).removeAttr('checked');
-				$(this).siblings('.zero').removeAttr('disabled');
-			};
+	// 		if ($(this).val() == '1') {
+	// 			$(this).attr('checked', true);
+	// 			$(this).siblings('.zero').attr('disabled', true);
+	// 		}else {
+	// 			$(this).removeAttr('checked');
+	// 			$(this).siblings('.zero').removeAttr('disabled');
+	// 		};
 
-			var data = $(this).parent('#emp_status').serialize();
-			$.ajax({
-				url: ADMIN_URI + 'admin/update_status',
-				type: 'post',
-				data: data,
-				dataType: 'json'
-			});	
-		});
-	});
+	// 		var data = $(this).parent('#emp_status').serialize();
+	// 		$.ajax({
+	// 			url: ADMIN_URI + 'admin/update_status',
+	// 			type: 'post',
+	// 			data: data,
+	// 			dataType: 'json'
+	// 		});	
+	// 	});
+	//  });
 	
 	$('#updateattendance').click(function(){
 		var data = $('#attendanceform_modal').serialize();
@@ -294,6 +299,10 @@ $(document).ready(function(){
 		});
 	});
 
+	$('body').on('mouseover', '[name="is_arrived"]', function(){
+		$('[name="is_arrived"]').attr('title', 'Check if Employee has arrived.');
+	})
+
 		// $('.search').keyup(function(){
 		// 	var search = $(this).val();
 		// 	var fieldname = $("thead span").attr('data-field');
@@ -319,7 +328,6 @@ $(document).ready(function(){
 	    	var fieldname = $("thead span").attr('data-field');
 			var i = $(this).attr('id');
 			var type;
-		
 			if(i == "li_awol"){ type = 'Awol'; tab='Awol';}
 			if(i == "li_absent"){ type = 'Absent'; tab='Absent'; } 
 			if(i == "li_late"){ type = 'Late';  tab='Late';}
@@ -336,5 +344,37 @@ $(document).ready(function(){
 				}
 			});
 	    });
+
+	    $('[name="is_arrived"]').attr('title', 'Check if Employee has arrived.');
+
+	    $('[name="is_arrived"]').each(function(){
+	    	var sts = $(this).val();
+		    if (sts == 1) {
+		    	$(this).prop('checked', true);
+		    }else if(sts == 0){
+		    	$(this).removeAttr('checked');
+		    }else{
+		    	$(this).removeAttr('checked');
+		    }
+	    })
+
+	    $('[name="is_arrived"]').on('click', function(){
+	    	var status = $(this).val();
+
+	    	$(this).each(function() {
+	    		var id = $(this).attr('data-id')
+	    		if(status == 0){
+		    		$(this).val(1);
+		    	}else{
+		    		$(this).val(0);
+		    	}
+		    	var stat = $(this).val();
+		    	$.ajax({
+					url: ADMIN_URI + 'admin/update_status',
+					type: 'post',
+					data: {'status': stat, 'id': id}
+				});
+			});
+	    })
 });
 </script>

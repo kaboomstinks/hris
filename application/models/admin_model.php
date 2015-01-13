@@ -351,8 +351,7 @@ class admin_model extends CI_Model {
 
 	public function update_status($status){
 		$updatedby = $this->session->userdata['usersession'];
-
-		$this->db->where('id', $status['id'])->update('tbl_daily_attendance', array('status' => $status['status'], 'updated_by' => $updatedby)); 
+		$this->db->where('emp_id', $status['id'])->update('tbl_daily_attendance', array('status' => $status['status'], 'updated_by' => $updatedby)); 
 	}
 	
 	public function updateAttendanceForm(){
