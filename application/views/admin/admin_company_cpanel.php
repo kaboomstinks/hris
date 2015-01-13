@@ -1,8 +1,46 @@
+<style>
+
+::-webkit-input-placeholder { /* WebKit browsers */
+	 font-style: italic;
+     color: GrayText !important;
+}
+.form-control option:first-child{
+display:none;
+}
+
+::-webkit-input-placeholder{
+opacity:0.4
+}
+
+:-moz-placeholder {
+opacity:0.4
+}
+
+::-moz-placeholder { 
+opacity:0.4 
+}
+
+:-ms-input-placeholder {  
+opacity:0.4
+}
+
+</style>
 <div style="width:1100px;margin:auto auto">
-	<div style="width:150px;margin:100px 25px 0 0;float:left;background:#f7f5fa;border-radius:5px">
+	<div style="width:150px;margin:100px 25px 0 0;float:left;border-radius:5px">
 		<?php include_once('asidemenu.php'); ?>
 	</div>
 	<div id="companycontainer" style="width:925px;float:right;margin-top:100px">
+	<ol class="breadcrumb mt040">
+                <li><a href="<?php echo base_url(); ?>">Home</a></li>
+                <li class="active">
+					<?php
+						$link = $_SERVER['REQUEST_URI'];
+						$is_link = ($link == 'COMPANY' ? '': 'Company');
+						echo ($is_link);
+					
+					?>
+				</li>
+            </ol>
 		<table class="table table-striped">
 			<thead>
 				<tr style="font-weight:bold">
@@ -159,6 +197,7 @@
 			if(validatecompany()){
 				var data = $('#addcompany_form').serialize();
 				var url;
+				var company_abbr_length = company_abbr.val().length;
 
 				if(savemode.val() == 1){
 					url = ADMIN_URI + 'admin/update_company';
@@ -166,27 +205,34 @@
 					url = ADMIN_URI + 'admin/add_company';
 				}
 
-				$.ajax({
-					url: url,
-					type: 'post',
-					data: data,
-					dataType: 'json',
-					beforeSend: function(){
-						companysave.text('Saving...');
-					},
-					success: function(data){
-						if(data.success == 0){
-							errorVal.val(1);
-							alertify(data.msg, 'Error');
-						} else {
-							errorVal.val(0);
-							alertify(data.msg, 'Notification');
+
+				if(company_abbr_length <= 11){
+					$.ajax({
+						url: url,
+						type: 'post',
+						data: data,
+						dataType: 'json',
+						beforeSend: function(){
+							companysave.text('Saving...');
+						},
+						success: function(data){
+							if(data.success == 0){
+								errorVal.val(1);
+								alertify(data.msg, 'Notification');
+							} else {
+								errorVal.val(0);
+								alertify(data.msg, 'Success');
+							}
+						},
+						complete: function(){
+							companysave.text('Save');
 						}
-					},
-					complete: function(){
-						companysave.text('Save');
-					}
-				});
+					});	
+				} else {
+					errorVal.val(1);
+					alertify('Abbreviation exceeds 11 characters', 'Notification');
+				}
+			
 			} 
 
 		});	

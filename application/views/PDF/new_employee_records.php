@@ -100,8 +100,19 @@ $tbl = <<<EOD
 EOD;
 
 $pdf->writeHTML($tbl, true, false, false, false, '');
+if($result[27] == 1){
+  $employer_name = 'Circus Co. Ltd (Philippine Branch)';
+} else if($result[27] == 2){
+  $employer_name = 'Tavolozza';  
+} else {
+  $employer_name = 'HalloHallo Inc.';
+}
 
-
+if($result[15] == 1 ){ 
+	$gender = 'Male';
+}else{ 
+	$gender = 'Female';
+}
 $html = '
 <style>
 .datafile {
@@ -112,7 +123,7 @@ $html = '
 <table border="0" width="100%">
 	<tr>
 		<td width="30%" align="right">Employer : </td>
-		<td width="40%" class="datafile">  '.$result[27].'</td>
+		<td width="40%" class="datafile">  '.$employer_name.'</td>
 		<td width="30%"></td>
 	</tr>
 	<tr>
@@ -206,7 +217,8 @@ $html = '
   </tr>
   <tr>
     <td align="right">Gender : </td>
-    <td class="datafile">  '.$result[15].'</td>
+
+    <td class="datafile">  '.$gender.'</td>
     <td></td>
   </tr>
   <tr>

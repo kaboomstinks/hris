@@ -88,6 +88,10 @@ class employee extends CI_Controller {
 		
 		$post_data = $this->input->post();
 		$data['name'] = $this->name;
+
+		$sourcePath = $_FILES['profile_picture']['tmp_name'];        
+		$targetPath = "uploads/".$_FILES['profile_picture']['name']; 
+		move_uploaded_file($sourcePath,$targetPath);
 		
 		if(isAdmin()){
 			$this->load->view('common/header.php', $data);	
@@ -133,7 +137,7 @@ class employee extends CI_Controller {
 		if(checkIsAjax()){
 			
 			$post_data = $this->input->post();
-			
+
 			if($this->session->userdata['credential'] == 2) {
 				$username = $this->session->userdata['usersession'];
 			} else {

@@ -10,6 +10,7 @@ class Email extends CI_Controller
     {
 
         parent::__construct();
+        isLoggedIn();
         date_default_timezone_set('Asia/Manila');
         if(isset($this->session->userdata['usersession']))
 		{
@@ -44,7 +45,6 @@ class Email extends CI_Controller
 			$data['report_table'] = $this->email_model->getReportTable(); // reporttable
 
 			$leave_data = $this->email_model->get_leave();
-		
 			$count = 1;
 			$data['message_leave'] = '';
 
@@ -53,8 +53,15 @@ class Email extends CI_Controller
 				$firstname = $leave_data[$key]["firstname"];
 				$lastname = $leave_data[$key]["lastname"];
 
+				if(trim($leave_data[$key]["remark"]) == ''){
+					$leave_remark = '';
+				} else {
+					$leave_remark = " (" .$leave_data[$key]["remark"]. ")";
+				}
+			
+
 				if ($leave_data[$key]["date_from"] != null || $leave_data[$key]["date_from"] != '') {
-					$date_from = '(' . date("F j".", "."Y", strtotime($leave_data[$key]["date_from"])) . ' - ';
+					$date_from = ' (' . date("F j".", "."Y", strtotime($leave_data[$key]["date_from"])) . ' - ';
 				}else{
 					$date_from = '';
 				}
@@ -65,14 +72,14 @@ class Email extends CI_Controller
 					$date_to = '';
 				}
 
-				$data['message_leave'] .= $count . ". " . $leave_data[$key]["firstname"] .' '. $leave_data[$key]["lastname"] ." -<b> " .  $leave_data[$key]["dep_abbr"] . "</b> - " . $leave_data[$key]["type"] . " Leave" . " - " . $leave_data[$key]["reason"] . $date_from . $date_to . "<br/>";
+				$data['message_leave'] .= $count . ". " . $leave_data[$key]["firstname"] .' '. $leave_data[$key]["lastname"] ." -<b> " .  $leave_data[$key]["dep_abbr"] . "</b> - " . $leave_data[$key]["type"] . " Leave" . " - " . $leave_data[$key]["reason"] . $leave_remark .$date_from . $date_to . "<br/>";
 				$count++;
 			}
 		
 
 		
 			$late_data = $this->email_model->get_late();
-
+		
 			if($late_data != ''){
 				$count = 1;
 				$data['message_late'] = '';
@@ -82,13 +89,20 @@ class Email extends CI_Controller
 					$firstname = $late_data[$key]["firstname"];
 					$lastname = $late_data[$key]["lastname"];
 
+					if(trim($late_data[$key]["remark"]) == ''){
+						$late_remark = '';
+					} else {
+						$late_remark = " (" .$late_data[$key]["remark"]. ")";
+					}
+
+
 					if ($late_data[$key]["status"] == 1) {
 						$arrived = "(Arrived)";
 					}elseif ($late_data[$key]["status"] == 0) {
 						$arrived = "";
 					}
 
-					$data['message_late'] .= $count . ". " . $late_data[$key]["firstname"] .' '. $late_data[$key]["lastname"] ." -<b> " .  $late_data[$key]["dep_abbr"] . "</b> - " . $late_data[$key]["reason"] . ' ' . $arrived . "<br/>";
+					$data['message_late'] .= $count . ". " . $late_data[$key]["firstname"] .' '. $late_data[$key]["lastname"] ." -<b> " .  $late_data[$key]["dep_abbr"] . "</b> - " . $late_data[$key]["reason"] . $late_remark . $arrived . "<br/>";
 					$count++;
 
 				}	
@@ -97,7 +111,6 @@ class Email extends CI_Controller
 
 			$late_no_notif_data = $this->email_model->get_late_no_notif();
 			
-
 			if($late_no_notif_data != ''){
 				$count = 1;
 				$data['message_no_notif_late'] = '';
@@ -107,10 +120,10 @@ class Email extends CI_Controller
 					$firstname = $late_no_notif_data[$key]["firstname"];
 					$lastname = $late_no_notif_data[$key]["lastname"];
 
-					if ($late_no_notif_data[$key]["status"] == 1) {
-						$arrived = "(Arrived)";
-					}elseif ($late_no_notif_data[$key]["status"] == 0) {
-						$arrived = "";
+					if(trim($late_no_notif_data[$key]["remark"]) == ''){
+						$late_no_notif_remark = '';
+					} else {
+						$late_no_notif_remark = " (" .$late_no_notif_data[$key]["remark"]. ")";
 					}
 
 					$data['message_no_notif_late'] .= $count . ". " . $late_no_notif_data[$key]["firstname"] .' '. $late_no_notif_data[$key]["lastname"] ." -<b> " .  $late_no_notif_data[$key]["dep_abbr"] . '</b> - ' . 'no notification sent to GA HR ' . $arrived . "<br/>";
@@ -130,14 +143,20 @@ class Email extends CI_Controller
 					$firstname = $absent_data[$key]["firstname"];
 					$lastname = $absent_data[$key]["lastname"];
 
-					$data['message_absent'] .= $count . ". " . $absent_data[$key]["firstname"] .' '. $absent_data[$key]["lastname"] ." -<b> " .  $absent_data[$key]["dep_abbr"] . "</b> - " . $absent_data[$key]["reason"] . "<br/>";
+					if(trim($absent_data[$key]["remark"]) == ''){
+						$absent_remark = '';
+					} else {
+						$absent_remark = " (" .$absent_data[$key]["remark"]. ")";
+					}
+
+					$data['message_absent'] .= $count . ". " . $absent_data[$key]["firstname"] .' '. $absent_data[$key]["lastname"] ." -<b> " .  $absent_data[$key]["dep_abbr"] . "</b> - " . $absent_data[$key]["reason"] . $absent_remark . "<br/>";
 					$count++;
 				}
 			}
 		
 
 			$awol_data = $this->email_model->get_awol();
-			
+
 			if($awol_data != ''){
 				$count = 1;
 				$data['message_awol'] = '';
@@ -147,12 +166,17 @@ class Email extends CI_Controller
 					$firstname = $awol_data[$key]["firstname"];
 					$lastname = $awol_data[$key]["lastname"];
 
-					$data['message_awol'] .= $count . ". " . $awol_data[$key]["firstname"] .' '. $awol_data[$key]["lastname"] ." -<b> " .  $awol_data[$key]["dep_abbr"] . "</b><br/>";
+					if(trim($awol_data[$key]["remark"]) == ''){
+						$awol_remark = '';
+					} else {
+						$awol_remark = " (" .$awol_data[$key]["remark"]. ")";
+					}
+
+					$data['message_awol'] .= $count . ". " . $awol_data[$key]["firstname"] .' '. $awol_data[$key]["lastname"] ." -<b> " .  $awol_data[$key]["dep_abbr"] . "</b>". $awol_remark ."<br/>";
 					$count++;
 
 				}
 			}
-		
 		
 			if($late_data == '' || $late_no_notif_data == '' || $absent_data == '' || $awol_data == ''){
 					$this->load->view('admin/mail_report_404');

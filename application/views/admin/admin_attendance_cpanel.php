@@ -1,16 +1,31 @@
 <div style="width:1100px;margin:auto auto">
 	<div style="margin:0 0 50px 984px">
 		<span style="position:relative;top:60px;right:120px;">Search:</span>
-		<input class="search form-control" type="text" name="search" style="width:180px;position:relative;top:34px;right:65px;">
+		<form action="<?php echo base_url(); ?>admin/admin_attendance_cpanel">
+			<input class="search form-control" type="text" name="search" style="width:180px;position:relative;top:34px;right:65px;">
+			<input id="tab" type="hidden" name="tab" value="<?php echo @$_GET['tab']?>"> 
+		</form>
 	</div>
-	<div style="width:150px;margin-right:25px;float:left;background:#f7f5fa;border-radius:5px">
+	
+	<div style="width:150px;margin-right:25px;float:left;border-radius:5px">
 		<?php include_once('asidemenu.php'); ?>
 	</div>
 	<div style="width:925px;float:right">
 		<ul id="attendancestatus" class="nav nav-tabs">
-			<li id="li_late" class="active"><a data-toggle="tab" href="#Late">Late</a></li>
-			<li id="li_absent"><a data-toggle="tab" href="#Absent">Absent</a></li>
-			<li id="li_awol"><a data-toggle="tab" href="#Awol">Awol</a></li>
+		<ol class="breadcrumb mt040">
+                <li><a href="<?php echo base_url(); ?>">Home</a></li>
+                <li class="active">
+					<?php
+						$link = $_SERVER['REQUEST_URI'];
+						$is_link = ($link == 'ATTENDANCE REPORT' ? '': 'Attendance Report');
+						echo ($is_link);
+					
+					?>
+				</li>
+            </ol>
+			<li id="li_late" class="<?php echo $Late; ?>"><a data-toggle="tab" href="#Late">Late</a></li>
+			<li id="li_absent" class="<?php echo $Absent; ?>"><a data-toggle="tab" href="#Absent">Absent</a></li>
+			<li id="li_awol" class="<?php echo $Awol; ?>"><a data-toggle="tab" href="#Awol">Awol</a></li>
 		</ul>
 		<div class="tab-content" style="margin-top:-20px">
 			<table class="table table-striped" style="margin-top:50px">
@@ -20,8 +35,8 @@
 						<td width="102px"><span data-field="department" data-sort="ASC">Department</span></td>
 						<td width="102px"><span data-field="position" data-sort="ASC">Position</span></td>
 						<td width="102px"><span data-field="emp_code" data-sort="ASC">Employee Code</span></td>
-						<td width="102px"><span data-field="date_filed" data-sort="ASC" style="cursor:pointer">Date Filed</span></td>
-						<td width="102px"><span data-field="firstname" data-sort="ASC" style="cursor:pointer">Name</span></td>
+						<td width="102px"><span data-field="date_filed" data-sort="ASC">Date Filed</span></td>
+						<td width="102px"><span data-field="firstname" data-sort="ASC">Name</span></td>
 						<td width="102px"><span data-field="type" data-sort="ASC">Reason</span></td>
 						<td colspan="2" align="center">Actions</td>
 					</tr>
@@ -50,17 +65,17 @@
 							<td width="80px"><?php echo $attendance->emp_code; ?></td>
 							<td width="80px"><?php echo date('m/d/Y h:i', $attendance->date_filed); ?></td>
 							<td width="80px"><?php echo $attendance->firstname.' '.$attendance->middlename.' '.$attendance->lastname; ?></td>
-							<td width="80px"><?php echo $attendance->reason; ?></td>
+							<td style="max-width: 80px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap; "><?php echo $attendance->reason; ?></td>
 							<td colspan="2" align="center">
 								<a class="editlink btn btn-warning"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
-								&nbsp;&nbsp;&nbsp;&nbsp;
+								&nbsp;
 								<a class="deletelink btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Delete</a>
 							</td>
 						</tr>
 				<?php } }?>
 				</tbody>
 			</table>
-			<!--span id="links"><?php  $links; ?></span> Temporarily removed -->
+			<span id="links"><?php echo $links; ?></span>
 			<span style="float:right; margin-top:19px;"><a href="<?php echo base_url(); ?>admin/admin_attendanceform" class="printpdf btn btn-primary">New</a></span>
 		</div>
 	</div>
@@ -279,80 +294,45 @@ $(document).ready(function(){
 		});
 	});
 
-		$('.search').keyup(function(){
-			var search = $(this).val();
-			var fieldname = $("thead span").attr('data-field');
-			var sort = $("thead span").attr('data-sort');
+		// $('.search').keyup(function(){
+		// 	var search = $(this).val();
+		// 	var fieldname = $("thead span").attr('data-field');
+		// 	var sort = $("thead span").attr('data-sort');
 
-			var type;
-			if($('#li_awol').hasClass('active')){ type = 'Awol'; } 
-				if($('#li_late').hasClass('active')) { type = 'Late'; }
-					if($('#li_absent').hasClass('active')) { type = 'Absent'; }
+		// 	var type;
+		// 	if($('#li_awol').hasClass('active')){ type = 'Awol'; } 
+		// 		if($('#li_late').hasClass('active')) { type = 'Late'; }
+		// 			if($('#li_absent').hasClass('active')) { type = 'Absent'; }
 
-			$.ajax({
-				url: ADMIN_URI + 'admin/admin_attendance_cpanel',
-				type: 'post',
-				data: {'search': search, 'fieldname': fieldname, 'sort': sort, 'type': type},
-				success: function(data){
-					$('#attendancetable').html(data);
-				}
-			});
-
-			/*var row_num = $("#numrow").val();
-
-			console.log(row_num);
-		    if (row_num <= 5 || row_num == undefined) { $('#links').css('display', 'none'); }
-		    	else{ $('#links').css('display', 'block'); };
-
-			if ($(this).val() == '') { $('#links').css('display', 'block'); };*/
-		});
-
-		$("thead span").click(function(){
-			var search = $('.search').val();
-			var fieldname = $(this).attr('data-field');
-			var sort = $(this).attr('data-sort')
-
-			if (sort == "ASC") { $(this).attr('data-sort', 'DESC') }
-				else{ $(this).attr('data-sort', 'ASC') };
-
-			var type;
-			if($('#li_awol').hasClass('active')){ type = 'Awol'; } 
-			if($('#li_late').hasClass('active')) { type = 'Late'; }
-			if($('#li_absent').hasClass('active')) { type = 'Absent'; }
-
-			if(fieldname == 'firstname' || fieldname == 'date_filed'){
-				$.ajax({
-					url: ADMIN_URI + 'admin/admin_attendance_cpanel',
-					type: 'post',
-					data: {'search': search, 'fieldname': fieldname, 'sort': sort, 'type': type},
-					success: function(data){
-						$('#attendancetable').html(data);
-					}
-				});
-			}
-	    });
-
+		// 	$.ajax({
+		// 		url: ADMIN_URI + 'admin/admin_attendance_cpanel',
+		// 		type: 'post',
+		// 		data: {'search': search, 'fieldname': fieldname, 'sort': sort, 'type': type},
+		// 		success: function(data){
+		// 			$('#attendancetable').html(data);
+		// 		}
+		// 	});
+		// });
 
 	    $("#attendancestatus li").click(function(){
 	    	var search = $('.search').val();
 	    	var fieldname = $("thead span").attr('data-field');
-			var sort = $("thead span").attr('data-sort');
-
 			var i = $(this).attr('id');
 			var type;
-			if(i == "li_awol"){ type = 'Awol'; }
-				if(i == "li_absent"){ type = 'Absent'; } 
-					if(i == "li_late"){ type = 'Late'; }
+		
+			if(i == "li_awol"){ type = 'Awol'; tab='Awol';}
+			if(i == "li_absent"){ type = 'Absent'; tab='Absent'; } 
+			if(i == "li_late"){ type = 'Late';  tab='Late';}
 
-			if (sort == "ASC") { $(this).attr('data-sort', 'DESC') }
-				else{ $(this).attr('data-sort', 'ASC') };
+			$('#tab').val(tab);
 
 			$.ajax({
 				url: ADMIN_URI + 'admin/admin_attendance_cpanel',
 				type: 'post',
-				data: {'search': search, 'fieldname': fieldname, 'sort': sort, 'type': type},
+				data: {'search': search, 'fieldname': fieldname, 'type': type,'tab':tab},
 				success: function(data){
-					$('#attendancetable').html(data);
+					$('#attendancetable').html(data.value);
+					$('#links').html(data.pagination);
 				}
 			});
 	    });

@@ -1,16 +1,30 @@
 <div style="width:1100px;margin:auto auto">
 	<div style="margin:0 0 50px 984px">
+	<form action="<?php echo base_url(); ?>admin/admin_changesched_cpanel">
 		<span style="position:relative;top:60px;right:120px;">Search:</span>
 		<input class="search form-control" type="text" name="search" style="width:180px;position:relative;top:34px;right:65px;">
+		<input id="tab" type="hidden" name="tab" value="<?php echo @$_GET['tab']?>">
+	</form>
 	</div>
-	<div style="width:150px;margin-right:25px;float:left;background:#f7f5fa;border-radius:5px">
+	<div style="width:150px;margin-right:25px;float:left;border-radius:5px">
 		<?php include_once('asidemenu.php'); ?>
 	</div>
 	<div style="width:925px;float:right">
+	<ol class="breadcrumb mt040">
+                <li><a href="<?php echo base_url(); ?>">Home</a></li>
+                <li class="active">
+					<?php
+						$link = $_SERVER['REQUEST_URI'];
+						$is_link = ($link == 'CHANGE SCHEDULE' ? '': 'Change Schedule');
+						echo ($is_link);
+					
+					?>
+				</li>
+            </ol>
 		<ul id="changestatus" class="nav nav-tabs">
-			<li id="li_approved" class="active"><a data-toggle="tab" href="#Approved">Approved</a></li>
-			<li id="li_denied"><a data-toggle="tab" href="#Denied">Denied</a></li>
-			<li id="li_pending"><a data-toggle="tab" href="#Pending">Pending</a></li>
+			<li id="li_approved" class="<?php echo $approved; ?>"><a data-toggle="tab" href="#Approved">Approved</a></li>
+			<li id="li_denied" class="<?php echo $denied; ?>"><a data-toggle="tab" href="#Denied">Denied</a></li>
+			<!-- <li id="li_pending"><a data-toggle="tab" href="#Pending">Pending</a></li> -->
 		</ul>
 		<div class="tab-content" style="margin-top:-20px">
 			<table class="table table-striped" style="margin-top:50px">
@@ -54,14 +68,14 @@
 							<td><?php echo $change->date_to; ?></td>
 							<td colspan="2" align="center">
 								<a class="editlink btn btn-warning"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
-								&nbsp;&nbsp;&nbsp;&nbsp;
+								&nbsp;
 								<a class="deletelink btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Delete</a>
 							</td>
 						</tr>
 				<?php } }?>
 				</tbody>
 			</table>
-			<!--span id="links"><?php  $links; ?></span> Temporarily removed -->
+			<span id="links"><?php echo $links; ?></span>
 			<span style="float:right; margin-top:19px;"><a href="<?php echo base_url(); ?>admin/admin_changeschedform" class="printpdf btn btn-primary">New</a></span>
 		</div>
 	</div>
@@ -261,48 +275,53 @@
 		});
 
 		 $("#changestatus li").click(function(){
+		 	var search = searchinput.val();
+	    	var fieldname = $("thead span").attr('data-field');
 			var i = $(this).attr('id');
 	    	var status;
 
-	    	if(i == "li_denied"){ status = 0; }
-			if(i == "li_approved"){ status = 1; } 
-			if(i == "li_pending"){ status = 2; }
+	    	if(i == "li_denied"){ status = 0;  tab='denied';}
+			if(i == "li_approved"){ status = 1; tab='approved';} 
+			if(i == "li_pending"){ status = 2;  tab='pending';}
+			$('#tab').val(tab);
+		
 
 			$.ajax({
 				url: ADMIN_URI + 'admin/admin_changesched_cpanel',
 				type: 'post',
-				data: {'status': status},
+				data: {'search': search, 'fieldname': fieldname, 'status': status, 'tab': tab},
 				success: function(data){
-					$('#offsettable').html(data);
+					$('#offsettable').html(data.value);
+					$('#links').html(data.pagination);
 				}
 			});
 	    });
 
-		 $("thead span").click(function(){
-			var search = searchinput.val();
-			var fieldname = $(this).attr('data-field');
-			var sort = $(this).attr('data-sort')
+		 // $("thead span").click(function(){
+			// var search = searchinput.val();
+			// var fieldname = $(this).attr('data-field');
+			// var sort = $(this).attr('data-sort')
 
-			if (sort == "ASC") { $(this).attr('data-sort', 'DESC') }
-			else{ $(this).attr('data-sort', 'ASC') };
+			// if (sort == "ASC") { $(this).attr('data-sort', 'DESC') }
+			// else{ $(this).attr('data-sort', 'ASC') };
 
-			var status;
-			if($('#li_denied').hasClass('active')) { status = 0; }
-			if($('#li_approved').hasClass('active')){ status = 1; } 
-			if($('#li_pending').hasClass('active')) { status = 2; }
+			// var status;
+			// if($('#li_denied').hasClass('active')) { status = 0; }
+			// if($('#li_approved').hasClass('active')){ status = 1; } 
+			// if($('#li_pending').hasClass('active')) { status = 2; }
 
-			if(fieldname == 'firstname' || fieldname == 'date_from'){
-				$.ajax({
-					url: ADMIN_URI + 'admin/admin_changesched_cpanel',
-					type: 'post',
-					data: {'search': search, 'fieldname': fieldname, 'sort': sort, 'status': status},
-					success: function(data){
-						$('#offsettable').html(data);
-					}
-				});
-			}
+			// if(fieldname == 'firstname' || fieldname == 'date_from'){
+			// 	$.ajax({
+			// 		url: ADMIN_URI + 'admin/admin_changesched_cpanel',
+			// 		type: 'post',
+			// 		data: {'search': search, 'fieldname': fieldname, 'sort': sort, 'status': status},
+			// 		success: function(data){
+			// 			$('#offsettable').html(data);
+			// 		}
+			// 	});
+			// }
 		
-	    });
+	  //   });
 
 
 	

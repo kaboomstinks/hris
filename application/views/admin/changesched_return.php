@@ -1,6 +1,5 @@
-<?php 
-if (!empty($changeschedtable)) {
-	foreach ($changeschedtable as $key => $change) { ?>
+<?php if (!empty($changeschedtable)) { ?>
+	<?php foreach ($changeschedtable as $key => $change) { ?>
 		<tr id="<?php echo $change->cid; ?>">
 			<td width="80px">
 				<?php
@@ -24,8 +23,9 @@ if (!empty($changeschedtable)) {
 			<td width="80px"><?php echo $change->date_to; ?></td>
 			<td colspan="2" align="center">
 				<a class="editlink btn btn-warning"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
-				&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;
 				<a class="deletelink btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Delete</a>
 			</td>
 		</tr>
-<?php } }?>
+<?php } ?>
+<?php } ?>

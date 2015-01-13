@@ -1,16 +1,30 @@
 <div style="width:1100px;margin:auto auto">
 	<div style="margin:0 0 50px 984px">
 		<span style="position:relative;top:60px;right:120px;">Search:</span>
-		<input class="search form-control" type="text" name="search" style="width:180px;position:relative;top:34px;right:65px;">
+		<form action="<?php echo base_url(); ?>admin/admin_leave_cpanel">
+			<input class="search form-control" type="text" name="search" style="width:180px;position:relative;top:34px;right:65px;">
+			<input id="tab" type="hidden" name="tab" value="<?php echo @$_GET['tab']?>">
+		</form>
 	</div>
-	<div style="width:150px;margin-right:25px;float:left;background:#f7f5fa;border-radius:5px">
+	<div style="width:150px;margin-right:25px;float:left;border-radius:5px">
 		<?php include_once('asidemenu.php'); ?>
 	</div>
 	<div style="width:925px;float:right">
+	<ol class="breadcrumb mt040">
+                <li><a href="<?php echo base_url() ?>">Home</a></li>
+                <li class="active">
+					<?php
+						$link = $_SERVER['REQUEST_URI'];
+						$is_link = ($link == 'LEAVE' ? '': 'Leave');
+						echo ($is_link);
+					
+					?>
+				</li>
+            </ol>
 		<ul id="leavestatus" class="nav nav-tabs">
-			<li id="li_approved" class="active"><a data-toggle="tab" href="#Approved">Approved</a></li>
-			<li id="li_denied"><a data-toggle="tab" href="#Denied">Denied</a></li>
-			<li id="li_pending"><a data-toggle="tab" href="#Pending">Pending</a></li>
+			<li id="li_approved"  class="<?php echo $approved;?>"  ><a data-toggle="tab" href="#Approved">Approved</a></li>
+			<li id="li_denied"  class="<?php echo $denied;?>"  ><a data-toggle="tab" href="#Denied">Denied</a></li>
+			<li id="li_pending"  class="<?php echo $pending;?>"  ><a data-toggle="tab" href="#Pending">Pending</a></li>
 		</ul>
 		<div class="tab-content" style="margin-top:-20px">
 			<table class="table table-striped" style="margin-top:50px">
@@ -20,9 +34,9 @@
 						<td width="90px"><span data-field="department" data-sort="ASC">Department</span></td>
 						<td width="90px"><span data-field="position" data-sort="ASC">Position</span></td>
 						<td width="90px"><span data-field="emp_code" data-sort="ASC">Employee Code</span></td>
-						<td width="90px"><span data-field="firstname" data-sort="ASC" style="cursor:pointer">Name</span></td>
+						<td width="90px"><span data-field="firstname" data-sort="ASC">Name</span></td>
 						<td width="90px"><span data-field="type" data-sort="ASC">Type of Leave</span></td>
-						<td width="90px"><span data-field="date_from" data-sort="ASC" style="cursor:pointer">Start</span></td>
+						<td width="90px"><span data-field="date_from" data-sort="ASC">Start</span></td>
 						<td width="90px"><span data-field="date_to" data-sort="ASC">End</span></td>
 						<td colspan="2" align="center">Actions</td>
 					</tr>
@@ -54,14 +68,14 @@
 							<td width="80px"><?php echo $leave->date_to; ?></td>
 							<td colspan="2" align="center">
 								<a class="editlink btn btn-warning"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
-								&nbsp;&nbsp;&nbsp;&nbsp;
+								&nbsp;
 								<a class="deletelink btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Delete</a>
 							</td>
 						</tr>
 				<?php } }?>
 				</tbody>
 			</table>
-			<!--span id="links"><?php  $links; ?></span> Temporarily removed -->
+			<span id="links"><?php echo $links; ?></span>
 			<span style="float:right; margin-top:19px;"><a href="<?php echo base_url(); ?>admin/admin_leaveform" class="printpdf btn btn-primary">New</a></span>
 		</div>
 	</div>
@@ -342,81 +356,53 @@
 			showRequest(s);
 		});*/
 
-		searchinput.keyup(function(){
-			var search = $(this).val();
-			var fieldname = $("thead span").attr('data-field');
-			var sort = $("thead span").attr('data-sort');
+		// searchinput.keyup(function(){
+		// 	var search = $(this).val();
+		// 	var fieldname = $("thead span").attr('data-field');
+		// 	var sort = $("thead span").attr('data-sort');
 
-			var status;
-			if($('#li_denied').hasClass('active')) { status = 0; }
-				if($('#li_approved').hasClass('active')){ status = 1; } 
-					if($('#li_pending').hasClass('active')) { status = 2; }
+		// 	var status;
+		// 	if($('#li_denied').hasClass('active')) { status = 0; }
+		// 		if($('#li_approved').hasClass('active')){ status = 1; } 
+		// 			if($('#li_pending').hasClass('active')) { status = 2; }
 			
-			$.ajax({
-				url: 'admin_leave_cpanel',
-				type: 'post',
-				data: {'search': search, 'fieldname': fieldname, 'sort': sort, 'status': status},
-				success: function(data){
-					$('#leavetable').html(data);
-				}
-			});
+		// 	$.ajax({
+		// 		url: 'admin_leave_cpanel',
+		// 		type: 'post',
+		// 		data: {'search': search, 'fieldname': fieldname, 'sort': sort, 'status': status},
+		// 		success: function(data){
+		// 			$('#leavetable').html(data);
+		// 		}
+		// 	});
 
-			/*var row_num = $("#numrow").val();
+		// 	/*var row_num = $("#numrow").val();
 
-			console.log(row_num);
-		    if (row_num <= 5 || row_num == undefined) { $('#links').css('display', 'none'); }
-		    	else{ $('#links').css('display', 'block'); };
+		// 	console.log(row_num);
+		//     if (row_num <= 5 || row_num == undefined) { $('#links').css('display', 'none'); }
+		//     	else{ $('#links').css('display', 'block'); };
 
-			if ($(this).val() == '') { $('#links').css('display', 'block'); };*/
-		});
-
-		$("thead span").click(function(){
-			var search = searchinput.val();
-			var fieldname = $(this).attr('data-field');
-			var sort = $(this).attr('data-sort')
-
-			if (sort == "ASC") { $(this).attr('data-sort', 'DESC') }
-			else{ $(this).attr('data-sort', 'ASC') };
-
-			var status;
-			if($('#li_denied').hasClass('active')) { status = 0; }
-			if($('#li_approved').hasClass('active')){ status = 1; } 
-			if($('#li_pending').hasClass('active')) { status = 2; }
-
-			if(fieldname == 'firstname' || fieldname == 'date_from'){
-				$.ajax({
-					url: 'admin_leave_cpanel',
-					type: 'post',
-					data: {'search': search, 'fieldname': fieldname, 'sort': sort, 'status': status},
-					success: function(data){
-						$('#leavetable').html(data);
-					}
-				});
-			}
-			
-	    });
-
+		// 	if ($(this).val() == '') { $('#links').css('display', 'block'); };*/
+		// });
 
 	    $("#leavestatus li").click(function(){
 	    	var search = searchinput.val();
 	    	var fieldname = $("thead span").attr('data-field');
-			var sort = $("thead span").attr('data-sort');
 			var i = $(this).attr('id');
 	    	var status;
+	    	
+	    	if(i == "li_denied"){ status = 0; tab='denied'}
+			if(i == "li_approved"){ status = 1; tab='approved'} 
+			if(i == "li_pending"){ status = 2;  tab='pending'}
 
-	    	if(i == "li_denied"){ status = 0; }
-			if(i == "li_approved"){ status = 1; } 
-			if(i == "li_pending"){ status = 2; }
-
-			if (sort == "ASC") { $(this).attr('data-sort', 'DESC') }
-				else{ $(this).attr('data-sort', 'ASC') };
+			$('#tab').val(tab);
 
 			$.ajax({
 				url: ADMIN_URI + 'admin/admin_leave_cpanel',
 				type: 'post',
-				data: {'search': search, 'fieldname': fieldname, 'sort': sort, 'status': status},
+				data: {'search': search, 'fieldname': fieldname, 'status': status,'tab': tab},
 				success: function(data){
-					$('#leavetable').html(data);
+					$('#leavetable').html(data.value);
+					$('#links').html(data.pagination);
 				}
 			});
 	    });

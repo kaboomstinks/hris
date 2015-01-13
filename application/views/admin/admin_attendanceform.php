@@ -69,6 +69,14 @@ $(function(){
 		}
 	});	
 
+	employee_name.keydown(function(){
+		if($(this).val() == ''){
+			emp_code.val('');
+		}
+	});
+
+
+
 	if(notice){
 		alertify(notice, 'Notification');
 	}

@@ -1,8 +1,19 @@
 <div style="width:1100px;margin:auto auto">
-	<div style="width:150px;margin:100px 25px 0 0;float:left;background:#f7f5fa;border-radius:5px">
+	<div style="width:150px;margin:100px 25px 0 0;float:left;border-radius:5px">
 		<?php include_once('asidemenu.php'); ?>
 	</div> <!-- End Aside Menu -->
 	<div id="benefitcontainer" style="width:925px;float:right;margin-top:100px">
+	<ol class="breadcrumb mt040">
+                <li><a href="<?php echo base_url(); ?>">Home</a></li>
+                <li class="active">
+					<?php
+						$link = $_SERVER['REQUEST_URI'];
+						$is_link = ($link == 'BENEFITS' ? '': 'Benefits');
+						echo ($is_link);
+					
+					?>
+				</li>
+            </ol>
 		<table class="table table-striped">
 			<thead>
 				<tr style="font-weight:bold">
@@ -56,11 +67,11 @@
 			  <span class="input-group-addon">Leave credits:</span>
 			  <input type="text" name="leaves" style="width:70px" class="form-control" />
 			</div>
-			<span style="margin-right:57px">HMO:</span>&nbsp;&nbsp;<input type="radio" name="hmo" id="y_hmo" value="1" />Yes&nbsp;&nbsp;<input type="radio" name="hmo" id="n_hmo" checked="checked" value="0" />None<br />
+			<span style="margin-right:55px">HMO:</span>&nbsp;&nbsp;<input type="radio" name="hmo" id="y_hmo" value="1" />Yes&nbsp;&nbsp;<input type="radio" name="hmo" id="n_hmo" checked="checked" value="0" />None<br />
 			<span style="margin-right:47px">Phone:</span>&nbsp;&nbsp;<input type="radio" name="phone" id="y_phone" value="1" />Yes&nbsp;&nbsp;<input type="radio" name="phone" id="n_phone" checked="checked" value="0" />None<br />
 			<span style="margin-right:62px">Gas:</span>&nbsp;&nbsp;<input type="radio" name="gas" id="y_gas" value="1" />Yes&nbsp;&nbsp;<input type="radio" name="gas" id="n_gas" checked="checked" value="0" />None<br />
-			<span style="margin-right:49px">Travel:</span>&nbsp;&nbsp;<input type="radio" name="travel" id="y_travel" value="1" />Yes&nbsp;&nbsp;<input type="radio" name="travel" id="n_travel" checked="checked" value="0" />None<br />
-			<span>Entertainment:</span>&nbsp;&nbsp;<input type="radio" name="ent" id="y_ent" value="1" />Yes&nbsp;&nbsp;<input type="radio" name="ent" id="n_ent" checked="checked" value="0" />None<br />
+			<span style="margin-right:48px">Travel:</span>&nbsp;&nbsp;<input type="radio" name="travel" id="y_travel" value="1" />Yes&nbsp;&nbsp;<input type="radio" name="travel" id="n_travel" checked="checked" value="0" />None<br />
+			<span style="margin-right:-1px">Entertainment:</span>&nbsp;&nbsp;<input type="radio" name="ent" id="y_ent" value="1" />Yes&nbsp;&nbsp;<input type="radio" name="ent" id="n_ent" checked="checked" value="0" />None<br />
 			
 		  </form>
 		  </div>

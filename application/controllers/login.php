@@ -63,11 +63,12 @@ class Login extends CI_Controller {
 			
 			$this->load->model('login_model');
 			$response = $this->login_model->login();
-			
-			if($response) {
+			if($response == 1) {
 				$data['success'] = 1;
-			} else {
+			}elseif($response == 0) {
 				$data['success'] = 0;
+			}elseif ($response == 2) {
+				$data['success'] = 2;
 			}
 			
 			echo json_encode($data);

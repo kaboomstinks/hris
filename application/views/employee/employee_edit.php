@@ -1,3 +1,25 @@
+<style>
+::-webkit-input-placeholder { /* WebKit browsers */
+	 font-style: italic;
+     color: GrayText !important;
+}
+
+::-webkit-input-placeholder{
+opacity:0.4
+}
+
+:-moz-placeholder {
+opacity:0.4
+}
+
+::-moz-placeholder { 
+opacity:0.4 
+}
+
+:-ms-input-placeholder {  
+opacity:0.4
+}
+</style>
 <div class="col-md-8 col-md-offset-2">
     <div class="panel panel-default" style="margin-top:50px;">
         <div class="panel-heading"><strong>Edit Details</strong></div>
@@ -60,7 +82,7 @@
 		                    <tr>
 		                        <th>Zipcode</th>
 		                        <td>
-		                        	<input type="text" value="<?php echo $zipcode; ?>" class="form-control" name="emp_pi[zipcode]">
+		                        	<input type="text" value="<?php  echo (empty($zipcode) ? '' : $zipcode);?>" class="form-control" name="emp_pi[zipcode]">
 		                        </td>
 		                    </tr>
 		                    <tr>
@@ -84,7 +106,7 @@
 		                    <tr>
 		                        <th>Date of Birth</th>
 		                        <td>
-									<input type="text" name="emp_pi[date_of_birth]" class="form-control datepicker" data-date-format="MM/DD/YYYY" value="<?php echo $date_of_birth; ?>" placeholder="MM/DD/YYYY"/>
+									<input type="text" name="emp_pi[date_of_birth]" class="form-control datepicker " data-date-format="MM/DD/YYYY" value="<?php echo $date_of_birth; ?>" placeholder="MM/DD/YYYY"/>
 		                        </td>
 		                    </tr>
 		                    <tr>
@@ -133,13 +155,13 @@
 		                    <tr>
 		                        <th>Password <span style="color:red">※</span></th>
 		                        <td>
-		                        	<input type="password" value="" id="pass" class="form-control" name="user[password]" placeholder="Password" required>
+		                        	<input type="password" value="" id="pass" class="form-control" style="font-style:italic" name="user[password]" placeholder="Password" required>
 		                        </td>
 		                    </tr>
 		                    <tr>
 		                        <th>Password Confirmation <span style="color:red">※</span></th>
 		                        <td>
-		                        	<input type="password" value="" id="cpass" class="form-control" name="user[password2]" placeholder="Confirm" required>
+		                        	<input type="password" value="" id="cpass" class="form-control" style="font-style:italic" name="user[password2]" placeholder="Confirm" required>
 		                        </td>
 		                    </tr>
 		                </table>
@@ -149,11 +171,16 @@
 		                	<table>
 		                		<tr>
 		                			<td>
-										<img id="imagepreview" src="<?php echo base_url(); ?>uploads/no_image_available.png" width="192" height="192" />
+		                				<?php if(empty($person_pic)){ ?>
+										<img id="imagepreview" class="img-circle" src="<?php echo base_url(); ?>uploads/no_image_available.png" width="192" height="192" />
+										<?php } else {?>
+										<img id="imagepreview" class="img-circle" src="<?php echo base_url(); ?>uploads/<?php echo $person_pic; ?>" width="192" height="192" />
+										<?php } ?>
 		                			</td>
 		                			<td>
 		                			<br /><br /><br /><br /><br /><br /><br />
-		                				<input type="file" id="imageupload" name="emp_ei[profile_picture]"/>
+		                				<input type="file" id="imageupload" onchange="readURL(this);" name="profile_picture"/>
+		                				<input type="hidden" id="imagename" name="emp_pi[profile_picture]" value="<?php echo $person_pic; ?>">
 		                			</td>
 		                		</tr>
 		                	</table>
@@ -205,7 +232,7 @@
 		                    <tr>
 		                        <th>Position</th>
 		                        <td>
-		                        	<input type="text" value="<?php echo $position; ?>" class="form-control emp_info" name="emp_ei[position]" readonly>
+		                        	<input type="text" value="<?php echo $position; ?>" class="form-control emp_info" name="emp_ei[position]" readonly>	
 		                        </td>
 		                    </tr>
 		                     <tr>
@@ -251,6 +278,16 @@
 		                        	<input type="text" value="<?php echo $date_regularization; ?>" class="form-control emp_info datepicker" name="emp_ei[date_regularization]" data-date-format="MM/DD/YYYY" placeholder="MM/DD/YYYY" readonly>
 		                        </td>
 		                    </tr>
+		                    <?php 
+		                    if (isAdmin()) { ?>
+			                    <tr>
+			                        <th>Deactivate</th>
+			                        <td>
+			                        	<input type="checkbox" value="<?php echo $is_active; ?>" class="is_active" name="emp_ei[is_active]" ><br/>
+			                        	<span style="font-size: 12px;">This will <span style="color: red;"><u>PERMANENTLY</u></span> deactivate this user</span>
+			                        </td>
+			                    </tr>
+		                    <?php } ?>
 		                    
 		                </table>
 		                <div class="page-header">
@@ -261,8 +298,8 @@
 		                        <th>In case of emergency notify: <span style="color:red">※</span></th>
 		                        <td>
 		                        	<input type="text" value="<?php if(isset($efirstname)){echo $efirstname;} ?>" class="form-control" name="emp_emerg[efirstname]" placeholder="First Name" required/>
-		                        	<input type="text" value="<?php if(isset($emiddlename)){echo $emiddlename;} ?>" class="form-control" name="emp_emerg[emiddlename]" placeholder="Middle Name" required/>
-		                        	<input type="text" value="<?php if(isset($elastname)){echo $elastname;} ?>" class="form-control" name="emp_emerg[elastname]" placeholder="Last Name" required/>
+		                        	<input type="text" value="<?php if(isset($emiddlename)){echo $emiddlename;} ?>" class="form-control"  name="emp_emerg[emiddlename]" placeholder="Middle Name" required/>
+		                        	<input type="text" value="<?php if(isset($elastname)){echo $elastname;} ?>" class="form-control"  name="emp_emerg[elastname]" placeholder="Last Name" required/>
 		                        </td>
 		                    </tr>
 		                    <tr>
@@ -303,6 +340,8 @@
 	    </div>
     </div>
 </div>
+
+
 
 <script>
 	$(document).ready(function(){
@@ -353,6 +392,8 @@
 		var relationship = $("input[name='emp_emerg[relationship]']");
 		var ehome_phone = $("input[name='emp_emerg[ehome_phone]']");
 		var emobile_phone = $("input[name='emp_emerg[emobile_phone]']");
+
+		var profile_picture = $("#imagename");
 		
 		
 		//=================Input Limits======================//
@@ -431,7 +472,7 @@
 		    }
 			
 			$.ajax({
-				url: ADMIN_URI + 'employee/employee_account_confirm',
+				url: EMPLOYEE_URI + 'employee/employee_account_confirm',
 				type: 'post',
 				data: data
 			});
@@ -512,6 +553,7 @@
 	        }
 	    });
 
+
 		/*function readURL(input) {
 			if (input.files && input.files[0]) {
 				var reader = new FileReader();
@@ -527,6 +569,51 @@
 		$("#imagepreview").change(function(){
 			readURL(this);
 		});*/
+
+		/*This is to set checkbox value to 1 and 0 if checked and unchecked*/
+		if ($('.is_active').val() == 1) {
+			$('.is_active').prop('checked', true);
+			$('.is_active').prop('disabled', true);
+		}else{
+			$('.is_active').prop('checked', false);
+		}
+
+		$('.is_active').on('change', function(){
+			if ($(this).val() == 0) {
+				$(this).val('1');
+			}else{
+				$(this).val('0');
+			};
+			
+		})
+	});
+
+	function basename(path) {
+	   return path.split(/[\\/]/).pop();
+	  };
+
+	function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#imagepreview').attr('src', e.target.result);
+            };
+            $('#imagename').val(basename($('#imageupload').val()));
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    $(function() {
+   		$("#emp_edit").click(function(){
+   			if ($('.is_active').val() == 1) {
+		      	if (confirm("Are you sure to permanently deactivate this user?")){
+		         	$('form#emp_edit_form').submit();
+		      	}else{
+		      		return false;
+		      	}
+		    }
+    	});
 	});
 	
 	

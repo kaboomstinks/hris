@@ -1,6 +1,5 @@
-				<?php 
-				if (!empty($leavetable)) {
-					foreach ($leavetable as $key => $leave) { ?>
+				<?php if (!empty($leavetable)) { ?>
+					<?php foreach ($leavetable as $key => $leave) { ?>
 						<tr id="<?php echo $leave->lid; ?>">
 							<td width="80px">
 								<?php
@@ -29,4 +28,6 @@
 								<a class="deletelink btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Delete</a>
 							</td>
 						</tr>
-				<?php } }?>
+				<?php }  ?>
+
+				<?php } ?>

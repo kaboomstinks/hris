@@ -11,7 +11,12 @@ class employee_model extends CI_Model {
 		$id = array('emp_id' =>$row['emp_id']);
 
 		$data['emp_pi'] = $this->db->get_where('tbl_person_info', $employee_id)->row_array();
-		$data['emp_ei'] = $this->db->get_where('tbl_employee_info', $id)->row_array();
+		$data['emp_ei'] = $this->db->select('*')
+								   ->join('tbl_company', 'tbl_employee_info.employer = tbl_company.id', 'inner')
+								   ->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id', 'inner')
+								   ->where('tbl_employee_info.id', $row['emp_id'])
+								   ->get('tbl_employee_info')
+								   ->row_array();
 		$data['emp_emerg'] = $this->db->get_where('tbl_employee_emergency_info', $id)->row_array();
 		$data['user'] = $this->db->get_where('tbl_logins', $id)->row_array();
 		return $data;

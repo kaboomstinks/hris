@@ -55,8 +55,8 @@
 		            <ul class="nav nav-pills navbar-left" style="margin-top:5px;">
 		                <li><a href="<?php echo base_url(); ?>">Home</a></li>
 		                <li><a href="<?php echo base_url(); ?>employee/employeeview">Profile</a></li>
-		                <li><a href="<?php echo base_url(); ?>employee/employee_create_request">Request</a></li>
-		                <li><a href="<?php echo base_url(); ?>employee/employee_create_leave">Leave</a></li>
+		               <!--  <li><a href="<?php echo base_url(); ?>employee/employee_create_request">Request</a></li>
+		                <li><a href="<?php echo base_url(); ?>employee/employee_create_leave">Leave</a></li> -->
 		            </ul>
 		        </div>
 		        <!--/.nav-collapse -->
@@ -74,7 +74,7 @@
 			$.ajax({
 				url: EMPLOYEE_URI + 'login/log_out',
 				complete: function(){
-					window.location.href = url + 'login';
+					window.location.href = EMPLOYEE_URI + 'login';
 				}
 			});	
 				

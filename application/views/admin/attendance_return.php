@@ -1,4 +1,5 @@
 				<?php if (!empty($attendancetable)) { ?>
+
 					<?php foreach ($attendancetable as $key => $attendance) { ?>
 						<tr id='<?php echo $attendance->tda_id; ?>' >
 							<td width="80px">
@@ -27,4 +28,5 @@
 								<a class="deletelink btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Delete</a>
 							</td>
 						</tr>
-				<?php } }?>
+				<?php } ?>
+			<?php } ?>

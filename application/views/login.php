@@ -99,9 +99,11 @@
 					success: function(data){
 						if(data.success == 1){
 							location.reload();
-						} else {
+						}else if(data.success == 0) {
 							alertify('Please login correctly.')
-						}	
+						}else if(data.success == 2) {
+							alertify('Deactivated Account!')
+						}
 					},
 					beforeSend: function(){
 						logmein.text('Logging in...');

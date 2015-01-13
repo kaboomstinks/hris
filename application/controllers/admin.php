@@ -20,20 +20,51 @@ class admin extends CI_Controller {
 
 	public function admin_attendance_cpanel(){
 		if(isAdmin()){
-			$search = $this->input->post('search');
+		
+			if(isset($_GET['search'])){
+				$search = $_GET['search'];
+			}else{
+				$search = null;
+			}
+
+			if($search == ''){
+				$this->session->unset_userdata('search');           // unset search key when search variable is in url and without value
+			}
+		
+			$search = $this->input->get('search');
 			$fieldname = $this->input->post('fieldname');
 			$sort = $this->input->post('sort');
 			$type = $this->input->post('type');
+			$tab = $this->input->get('tab');
+	
 	 		if($type == NULL){
 	 			$type = 'Late';
 	 		}
+			
+			if (empty($tab))
+	 		{
+	 			$tab = @$_POST['tab'];
+	 		}
+
+	 		if (!empty($tab))
+	        {
+	        	if ($tab =='Late'){
+	        		$type = 'Late';
+	        	}elseif ($tab == 'Absent') {
+	        		$type = 'Absent';
+	        	}else{
+	        		$type = 'Awol';	
+	        	}
+	        }
 
 			$config = array();
 	        $config["base_url"] = base_url() . "admin/admin_attendance_cpanel/";
-	        $config["total_rows"] = $this->admin_model->AttendanceTable_record_count($type);
+	        $config["total_rows"] = $this->admin_model->AttendanceTable_record_count($type, $search);
+			$config['suffix'] = '?tab='.$tab.'&search='.$search;
 
 	        $config["per_page"] = 5;
 	        $config["uri_segment"] = 3;
+			$config['first_url'] = $config['base_url'].$config['suffix'];
 	        $config['full_tag_open'] = "<ul class='pagination'>";
 			$config['full_tag_close'] ="</ul>";
 			$config['num_tag_open'] = '<li>';
@@ -56,19 +87,45 @@ class admin extends CI_Controller {
 			$data['attendancetable'] = $this->admin_model->getAttendanceTable($config["per_page"], $page, $search, $fieldname, $sort, $type);
 			$data['jsonSuggestion'] = $this->admin_model->getNameSuggest();
 			$data['name'] = $this->name;
+			
 			if (checkIsAjax()){
-				$this->load->view('admin/attendance_return', $data);
+				// $data['links'] = $this->pagination->create_links();
+				// $this->load->view('admin/attendance_return', $data);
+
+				$paging = $data['links'];
+				$check =$this->load->view('admin/attendance_return', $data,true);
+				$this->output->set_content_type('application/json');
+				$this->output->set_output(json_encode(array('value'=> $check,'pagination'=>$paging)));
+				
 			}else{
+			
+				if ($tab =='Awol'){
+					$data['Late'] ='';
+				 	$data['Absent'] ='';
+				 	$data['Awol'] ='active';
+
+				}elseif ($tab =='Absent') {
+					$data['Late'] ='';
+				 	$data['Absent'] ='active';
+				 	$data['Awol'] ='';
+
+				}else{
+				 	$data['Late'] ='active';
+				 	$data['Absent'] ='';
+				 	$data['Awol'] ='';
+
+				}
+			
 				$this->load->view('common/header', $data);
 				$this->load->view('admin/admin_attendance_cpanel');
-				$this->load->view('common/footer');
+				$this->load->view('common/footer');	
 			}
 			
 		} else {
 			$this->load->view('admin/accessdenied');
 		}
 		
-
+		// fn_print_r($config['total_rows'], $data['links']);
 		/* $this->load->view('common/header');
 
 		$this->load->model('admin_model');
@@ -126,22 +183,132 @@ class admin extends CI_Controller {
 	
 	//------------------------------------------- ADMIN LEAVE FORM --------------------------------------------//
 
-	public function admin_leave_cpanel(){
 
+	public function admin_changesched_cpanel(){
 		if(isAdmin()){
-			$search = $this->input->post('search');
+			$search = $this->input->get('search');
 			$fieldname = $this->input->post('fieldname');
 			$sort = $this->input->post('sort');
 			$status = $this->input->post('status');
+
+			$tab = (!empty($_GET['tab'])) ? $_GET['tab']: "";
+			
+			$tab = (!empty($_POST['tab'])) ? $_POST['tab']: $tab;
+
+
+			if($status == null){
+				$status = 1;
+			}
+
+			if ($tab =='denied') $status =0;
+
+			$config = array();
+	        $config["base_url"] = base_url() . "admin/admin_changesched_cpanel/";
+	        $config["total_rows"] = $this->admin_model->ChangeTable_record_count($status, $search);
+	        $config["per_page"] = 5;
+	        $config["uri_segment"] = 3;
+	        $config['suffix'] = '?tab='.$tab.'&search='.$search;
+			$config['first_url'] = $config['base_url'].$config['suffix'];
+	        $config['full_tag_open'] = "<ul class='pagination'>";
+			$config['full_tag_close'] ="</ul>";
+			$config['num_tag_open'] = '<li>';
+			$config['num_tag_close'] = '</li>';
+			$config['cur_tag_open'] = "<li class='disabled'><li class='active'><a href='#'>";
+			$config['cur_tag_close'] = "<span class='sr-only'></span></a></li>";
+			$config['next_tag_open'] = "<li>";
+			$config['next_tagl_close'] = "</li>";
+			$config['prev_tag_open'] = "<li>";
+			$config['prev_tagl_close'] = "</li>";
+			$config['first_tag_open'] = "<li>";
+			$config['first_tagl_close'] = "</li>";
+			$config['last_tag_open'] = "<li>";
+			$config['last_tagl_close'] = "</li>";
+
+	  		$this->pagination->initialize($config);
+	 
+	  	    $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
+	        $data["links"] = $this->pagination->create_links();
+
+			$data['changeschedtable'] = $this->admin_model->getChangeSchedTable($config["per_page"], $page, $search, $fieldname, $sort, $status);
+			$data['name'] = $this->name;
+			$data['jsonSuggestion'] = $this->admin_model->getNameSuggest();
+
+			if(checkIsAjax()){
+				// $data['links'] = $this->pagination->create_links();
+				// $this->load->view('admin/changesched_return', $data);
+
+				$paging = $data['links'];
+				$check =$this->load->view('admin/changesched_return', $data,true);
+				$this->output->set_content_type('application/json');
+				$this->output->set_output(json_encode(array('value'=> $check,'pagination'=>$paging)));
+
+			}else {
+				$data['denied']='';
+				$data['approved']='active';
+				if ($tab =='denied')
+				{
+					$data['denied']='active';
+					$data['approved']='';
+				}
+
+				$this->load->view('common/header', $data);
+				$this->load->view('admin/admin_changesched_cpanel');
+				$this->load->view('common/footer');
+			}
+		}else {
+			$this->load->view('admin/accessdenied');
+		}
+	}
+
+
+	public function admin_leave_cpanel(){
+
+		if(isAdmin()){
+
+			if(isset($_GET['search'])){
+				$search = $_GET['search'];
+			}else{
+				$search = null;
+			}
+
+			if($search == ''){
+				$this->session->unset_userdata('search');           // unset search key when search variable is in url and without value
+			}
+
+			// $search = $this->admin_model->search_handler(trim($this->input->get('search')));
+			$search = $this->input->get('search');
+			$fieldname = $this->input->post('fieldname');
+			$sort = $this->input->post('sort');
+			$status = $this->input->post('status');
+			$tab = $this->input->get('tab');
 	 		if($status == NULL){
 	 			$status = 1;
 	 		}
 
+	 		if (empty($tab))
+	 		{
+	 			$tab = @$_POST['tab'];
+	 		}
+
+	 		if (!empty($tab))
+	        {
+	        	if ($tab =='denied'){
+	        		$status = 0;
+	        	}elseif ($tab == 'approved') {
+	        		$status = 1;
+	        	}else{
+	        		$status = 2;
+	        	}
+	      
+	        }
+
 			$config = array();
 	        $config["base_url"] = base_url() . "admin/admin_leave_cpanel/";
-	        $config["total_rows"] = $this->admin_model->LeaveTable_record_count(2);
+	        $config["total_rows"] = $this->admin_model->LeaveTable_record_count($status, $search);
 	        $config["per_page"] = 5;
 	        $config["uri_segment"] = 3;
+	        $config['suffix'] = '?tab='.$tab.'&search='.$search;
+	        $config['first_url'] = $config['base_url'].$config['suffix'];
 	        $config['full_tag_open'] = "<ul class='pagination'>";
 			$config['full_tag_close'] ="</ul>";
 			$config['num_tag_open'] = '<li>';
@@ -160,14 +327,38 @@ class admin extends CI_Controller {
 	        $this->pagination->initialize($config);
 	 
 	        $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
+	        
 	        $data["links"] = $this->pagination->create_links();
-
 			$data['leavetable'] = $this->admin_model->getLeaveTable($config["per_page"], $page, $search, $fieldname, $sort, $status);
 			$data['name'] = $this->name;
 			$data['jsonSuggestion'] = $this->admin_model->getNameSuggest();
+		
 			if (checkIsAjax()){
-				$this->load->view('admin/leave_return', $data);
+				// $data['links'] = $this->pagination->create_links();
+				// $this->load->view('admin/leave_return', $data);
+
+				$paging = $data['links'];
+				$check =$this->load->view('admin/leave_return', $data,true);
+				$this->output->set_content_type('application/json');
+				$this->output->set_output(json_encode(array('value'=> $check,'pagination'=>$paging)));
+				
 			}else{
+
+				if ($tab =='denied'){
+					$data['denied'] ='active';
+				 	$data['pending'] ='';
+				 	$data['approved'] ='';
+
+				}elseif ($tab =='pending') {
+					$data['denied'] ='';
+				 	$data['pending'] ='active';
+				 	$data['approved'] ='';
+				}else{
+				 	$data['denied'] ='';
+				 	$data['pending'] ='';
+				 	$data['approved'] ='active';
+
+				}
 				$this->load->view('common/header', $data);
 				$this->load->view('admin/admin_leave_cpanel');
 				$this->load->view('common/footer');
@@ -176,6 +367,8 @@ class admin extends CI_Controller {
 		} else {
 			$this->load->view('admin/accessdenied');
 		}
+
+		// fn_print_r($config);
 	
 		/*$data['leave_approved'] = $this->admin_leave_approved();
 		$data['leave_denied'] = $this->admin_leave_denied();
@@ -328,30 +521,7 @@ class admin extends CI_Controller {
 	//------------------------------------ ADMIN CHANGE SCHEDULE/OFFSET FORM ------------------------------------//
 
 
-	public function admin_changesched_cpanel(){
-		if(isAdmin()){
-			$status = $this->input->post('status');
-			$fieldname = $this->input->post('fieldname');
-			$sort = $this->input->post('sort');
 
-			if($status == null){
-				$status = 1;
-			}
-			$data['changeschedtable'] = $this->admin_model->getChangeSchedTable($status, $fieldname, $sort);
-			$data['name'] = $this->name;
-			$data['jsonSuggestion'] = $this->admin_model->getNameSuggest();
-
-			if(checkIsAjax()){
-				$this->load->view('admin/changesched_return', $data);
-			}else {
-				$this->load->view('common/header', $data);
-				$this->load->view('admin/admin_changesched_cpanel');
-				$this->load->view('common/footer');
-			}
-		}else {
-			$this->load->view('admin/accessdenied');
-		}
-	}
 
 	public function edit_changesched() {
 		if(checkIsAjax()) {
@@ -555,9 +725,36 @@ class admin extends CI_Controller {
 
 	public function admin_department_cpanel(){
 		if(isAdmin()){
+
+			$config = array();
+	        $config["base_url"] = base_url() . "admin/admin_department_cpanel/";
+	        $config["total_rows"] = $this->admin_model->dep_count();
+	        $config["per_page"] = 10;
+	        $config["uri_segment"] = 3;
+	        $config['full_tag_open'] = "<ul class='pagination'>";
+			$config['full_tag_close'] ="</ul>";
+			$config['num_tag_open'] = '<li>';
+			$config['num_tag_close'] = '</li>';
+			$config['cur_tag_open'] = "<li class='disabled'><li class='active'><a href='#'>";
+			$config['cur_tag_close'] = "<span class='sr-only'></span></a></li>";
+			$config['next_tag_open'] = "<li>";
+			$config['next_tagl_close'] = "</li>";
+			$config['prev_tag_open'] = "<li>";
+			$config['prev_tagl_close'] = "</li>";
+			$config['first_tag_open'] = "<li>";
+			$config['first_tagl_close'] = "</li>";
+			$config['last_tag_open'] = "<li>";
+			$config['last_tagl_close'] = "</li>";
+
+	        $this->pagination->initialize($config);
+	 
+	        $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
+	        $data["links"] = $this->pagination->create_links();
+
 			$data['name'] = $this->name;
 			$this->load->view('common/header', $data);
-			$data['departments'] = $this->admin_model->getAllDepartment();
+			$data['departments'] = $this->admin_model->getAllDepartment($config["per_page"], $page);
+			$data['companies'] = $this->admin_model->getAllCompanies();
 
 			$this->load->view('admin/admin_department_cpanel', $data);
 			$this->load->view('common/footer');	
@@ -686,9 +883,16 @@ class admin extends CI_Controller {
 	public function admin_user_cpanel(){
 		
 		if(isset($this->session->userdata['usersession'])){
+			//$this->session->unset_userdata('search');
 			if(isAdmin()){
 				
-				if(isset($_GET['search']) && $_GET['search'] == ''){
+				if(isset($_GET['search'])){
+					$gsearch = $_GET['search'];
+				}else{
+					$gsearch = null;
+				}
+
+				if($gsearch == ''){
 					$this->session->unset_userdata('search');           // unset search key when search variable is in url and without value
 				}
 
@@ -696,11 +900,18 @@ class admin extends CI_Controller {
 				
 				$fieldname = $this->input->post('fieldname');
 				$sort = $this->input->post('sort');
+				$sort = (!empty($_GET['sort'])) ? $_GET['sort'] : $sort;
+				$fieldname =(!empty($_GET['fieldname'])) ? $_GET['fieldname'] : $fieldname;
+				$sortby = !(empty($sort)) ? '&sort='.$sort : '';
+				$fieldnameby = !(empty($fieldname)) ? '&fieldname='.$fieldname : '';
+
 				$config = array();
 		        $config["base_url"] = base_url() . "admin/admin_user_cpanel/";
 		        $config["total_rows"] = $this->admin_model->UsersTable_record_count($search);
-		        $config["per_page"] = 5;
+		        $config["per_page"] = 10;
 		        $config["uri_segment"] = 3;
+		        $config["suffix"] = '?search='.$search. $sortby . $fieldnameby;
+		        $config["first_url"] = $config["base_url"].$config["suffix"];
 		        $config['full_tag_open'] = "<ul class='pagination'>";
 				$config['full_tag_close'] ="</ul>";
 				$config['num_tag_open'] = '<li>';
@@ -723,15 +934,21 @@ class admin extends CI_Controller {
 		        $data['userstable'] = $this->admin_model->getUserSearchTable($search, $config["per_page"], $page, $fieldname, $sort);
 				$data["t_rows"] = $config["total_rows"];
 				$data['name'] = $this->name;
+				$data['companies'] = $this->admin_model->getAllCompanies();
+				$data['departments'] = $this->admin_model->getAllDepartments();
 
 				if (checkIsAjax()){
-					$this->load->view('admin/user_search_return', $data);
+
+					$paging = $data['links'];
+					$check = $this->load->view('admin/user_search_return', $data, true);
+					$this->output->set_content_type('application/json');
+					$this->output->set_output(json_encode(array('value'=> $check,'pagination'=>$paging)));
+					$check = $this->load->view('admin/user_search_return', $data, true);
 				}else{
 					$this->load->view('common/header', $data);
 					$this->load->view('admin/admin_user_cpanel', $data);
 					$this->load->view('common/footer');
 				}	
-
 
 			} else {
 				$this->load->view('admin/accessdenied');

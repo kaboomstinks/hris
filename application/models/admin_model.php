@@ -187,8 +187,22 @@ class admin_model extends CI_Model {
 		return $attend_all;
 	}*/
 	
-	public function AttendanceTable_record_count($type) {
-		$query = $this->db->query("SELECT * FROM tbl_daily_attendance WHERE type = '$type'");
+	public function AttendanceTable_record_count($type, $search) {
+		$query = $this->db->query("SELECT *, tbl_departments.dep_name, tbl_daily_attendance.id as tda_id FROM tbl_daily_attendance 
+						INNER JOIN tbl_employee_info ON tbl_daily_attendance.emp_id = tbl_employee_info.emp_id 
+						INNER JOIN tbl_person_info ON tbl_person_info.id = tbl_employee_info.emp_id
+						INNER JOIN tbl_departments ON tbl_departments.id = tbl_employee_info.department 
+						INNER JOIN tbl_company ON tbl_company.id = tbl_employee_info.company 
+						WHERE tbl_daily_attendance.type = '{$type}' 
+						AND (tbl_employee_info.company LIKE '%{$search}%' 
+						OR tbl_employee_info.department LIKE '%{$search}%' 
+						OR tbl_employee_info.position LIKE '%{$search}%' 
+						OR tbl_daily_attendance.emp_code LIKE '%{$search}%' 
+						OR tbl_person_info.firstname LIKE '%{$search}%' 
+						OR tbl_person_info.middlename LIKE '%{$search}%' 
+						OR tbl_person_info.lastname LIKE '%{$search}%'
+						OR tbl_company.company_name LIKE '%{$search}%')");
+
 		return $query->num_rows();
     }
 
@@ -197,6 +211,7 @@ class admin_model extends CI_Model {
 						INNER JOIN tbl_employee_info ON tbl_daily_attendance.emp_id = tbl_employee_info.emp_id 
 						INNER JOIN tbl_person_info ON tbl_person_info.id = tbl_employee_info.emp_id
 						INNER JOIN tbl_departments ON tbl_departments.id = tbl_employee_info.department 
+						INNER JOIN tbl_company ON tbl_company.id = tbl_employee_info.company 
 						WHERE tbl_daily_attendance.type = '{$type}' 
 						AND (tbl_employee_info.company LIKE '%{$search}%' 
 						OR tbl_employee_info.department LIKE '%{$search}%' 
@@ -204,7 +219,9 @@ class admin_model extends CI_Model {
 						OR tbl_daily_attendance.emp_code LIKE '%{$search}%' 
 						OR tbl_person_info.firstname LIKE '%{$search}%' 
 						OR tbl_person_info.middlename LIKE '%{$search}%' 
-						OR tbl_person_info.lastname LIKE '%{$search}%')";
+						OR tbl_person_info.lastname LIKE '%{$search}%'
+						OR tbl_company.company_name LIKE '%{$search}%')";
+
 
 		 if (($fieldname && $sort) != (null || '')) {
 		 	$fieldname == 'firstname' ? $fieldname = 'tbl_person_info.firstname' : $fieldname = 'tbl_daily_attendance.date_filed'; 
@@ -296,33 +313,40 @@ class admin_model extends CI_Model {
 
 	public function insertAttendanceForm(){
 		$emp_code = $this->input->post('emp_code');
-		$getThisID = $this->db->get_where('tbl_employee_info', array('emp_code' => $emp_code));
-		$emp_id  = $getThisID->row_array();
-		
-		$date_filed = strtotime($this->input->post('datefiled'));
-		$remark = $this->input->post('remark');
-		$type = $this->input->post('type');
-		$reason = $this->input->post('reason');
-		$updatedby = $this->session->userdata['usersession'];
 
-		$data = array(
-		   'emp_id' => $emp_id['emp_id'],
-		   'emp_code' => $emp_code,
-		   'date_filed' => $date_filed,
-		   'remark' => $remark,
-		   'type' => $type,
-		   'reason' => $reason,
-		   'updated_by' => $updatedby
-		);
+		if(!empty($emp_code)){
+			$getThisID = $this->db->get_where('tbl_employee_info', array('emp_code' => $emp_code, 'is_active' => 0));
+			$emp_id  = $getThisID->row_array();
+			
+			$date_filed = strtotime($this->input->post('datefiled'));
+			$remark = $this->input->post('remark');
+			$type = $this->input->post('type');
+			$reason = $this->input->post('reason');
+			$updatedby = $this->session->userdata['usersession'];
 
-		$this->db->insert('tbl_daily_attendance', $data); 
-		$aid = $this->db->insert_id();
+			$data = array(
+			   'emp_id' => $emp_id['emp_id'],
+			   'emp_code' => $emp_code,
+			   'date_filed' => $date_filed,
+			   'remark' => $remark,
+			   'type' => $type,
+			   'reason' => $reason,
+			   'updated_by' => $updatedby
+			);
 
-		if($aid){
-			$this->session->set_flashdata('notification', 'Successfully saved');
-		} else {
-			$this->session->set_flashdata('notification', 'Failed to save');
-		}		
+			$this->db->insert('tbl_daily_attendance', $data); 
+			$aid = $this->db->insert_id();
+
+			if($aid){
+				$this->session->set_flashdata('notification', 'Successfully saved');
+			} else {
+				$this->session->set_flashdata('notification', 'Failed to save');
+			}	
+		}else {
+			$this->session->set_flashdata('notification', 'Invalid employee name');
+		}
+
+			
 	}
 
 	public function update_status($status){
@@ -371,8 +395,21 @@ class admin_model extends CI_Model {
 	
 	
 	//---------------------------------------------------------- LEAVE FORM ----------------------------------------------------------//
-	public function LeaveTable_record_count($status) {
-		$query = $this->db->query("SELECT * FROM tbl_leaves WHERE status = $status");
+	public function LeaveTable_record_count($status, $search) {
+		$query = $this->db->query("SELECT *, tbl_departments.dep_name, tbl_leaves.id as lid FROM tbl_leaves 
+						INNER JOIN tbl_employee_info ON tbl_leaves.emp_id = tbl_employee_info.emp_id 
+						INNER JOIN tbl_person_info ON tbl_person_info.id = tbl_employee_info.emp_id 
+						INNER JOIN tbl_departments ON tbl_departments.id = tbl_employee_info.department 
+						INNER JOIN tbl_company ON tbl_company.id = tbl_employee_info.company 
+						WHERE tbl_leaves.status = '{$status}' 
+						AND (tbl_company.company_name LIKE '%{$search}%' 
+						OR tbl_employee_info.department LIKE '%{$search}%' 
+						OR tbl_employee_info.position LIKE '%{$search}%' 
+						OR tbl_leaves.emp_code LIKE '%{$search}%' 
+						OR tbl_person_info.firstname LIKE '%{$search}%' 
+						OR tbl_person_info.middlename LIKE '%{$search}%' 
+						OR tbl_person_info.lastname LIKE '%{$search}%' 
+						OR tbl_leaves.type LIKE '%{$search}%')");
 		return $query->num_rows();
     }
 
@@ -382,8 +419,9 @@ class admin_model extends CI_Model {
 						INNER JOIN tbl_employee_info ON tbl_leaves.emp_id = tbl_employee_info.emp_id 
 						INNER JOIN tbl_person_info ON tbl_person_info.id = tbl_employee_info.emp_id 
 						INNER JOIN tbl_departments ON tbl_departments.id = tbl_employee_info.department 
+						INNER JOIN tbl_company ON tbl_company.id = tbl_employee_info.company 
 						WHERE tbl_leaves.status = '{$status}' 
-						AND (tbl_employee_info.company LIKE '%{$search}%' 
+						AND (tbl_company.company_name LIKE '%{$search}%' 
 						OR tbl_employee_info.department LIKE '%{$search}%' 
 						OR tbl_employee_info.position LIKE '%{$search}%' 
 						OR tbl_leaves.emp_code LIKE '%{$search}%' 
@@ -468,7 +506,7 @@ class admin_model extends CI_Model {
 	public function insertLeaveForm() {
 
 		$emp_code = $this->input->post('emp_code');
-		$getThisID = $this->db->get_where('tbl_employee_info', array('emp_code' => $emp_code));
+		$getThisID = $this->db->get_where('tbl_employee_info', array('emp_code' => $emp_code, 'is_active' => 0));
 		$emp_id  = $getThisID->row_array();
 
 		$date_filed = strtotime($this->input->post('datefiled'));
@@ -494,36 +532,41 @@ class admin_model extends CI_Model {
 		$time_from = date("H:i a", strtotime($t_from));
 		$time_to = date("H:i a", strtotime($t_to));
 
-		$id = $emp_id['emp_id'];
-		$data = array(
-			'emp_id' => $id,
-			'emp_code' => $emp_code,
-			'date_filed' => $date_filed,
-			'date_from' => $date_from,
-			'time_from' => $time_from,
-			'date_to' => $date_to,
-			'time_to' => $time_to,
-			'reason' => $reason,
-			'numleave' => $numleave,
-			'leavepay' => $leavepay,
-			'type' => $type,
-			'remark' => $remark,
-			'status' => $approval,
-			'updated_by' => $updatedby
-		);
-		$this->db->insert('tbl_leaves', $data);
-		$lid = $this->db->insert_id();
+		$id = @$emp_id['emp_id'];
+		if ($id) {
+			$data = array(
+				'emp_id' => $id,
+				'emp_code' => $emp_code,
+				'date_filed' => $date_filed,
+				'date_from' => $date_from,
+				'time_from' => $time_from,
+				'date_to' => $date_to,
+				'time_to' => $time_to,
+				'reason' => $reason,
+				'numleave' => $numleave,
+				'leavepay' => $leavepay,
+				'type' => $type,
+				'remark' => $remark,
+				'status' => $approval,
+				'updated_by' => $updatedby
+			);
+			$this->db->insert('tbl_leaves', $data);
+			$lid = $this->db->insert_id();
 
-		if($lid){
-			$this->session->set_flashdata('notification', 'Successfully saved');
-		} else {
-			$this->session->set_flashdata('notification', 'Failed to save');
+			if($lid){
+				$this->session->set_flashdata('notification', 'Successfully saved!');
+			} else {
+				$this->session->set_flashdata('notification', 'Failed to save!');
+			}
+		}else{
+			$this->session->set_flashdata('notification', 'User not existing!');
 		}
+
 	}
 
 	public function insertChangeSchedForm(){
 		$emp_code = $this->input->post('emp_code');
-		$getThisID = $this->db->get_where('tbl_employee_info', array('emp_code' => $emp_code));
+		$getThisID = $this->db->get_where('tbl_employee_info', array('emp_code' => $emp_code, 'is_active' => 0));
 		$emp_id  = $getThisID->row_array();
 
 		$date_filed = strtotime($this->input->post('datefiled'));
@@ -545,29 +588,32 @@ class admin_model extends CI_Model {
 		$time_from = date("H:i a", strtotime($t_from));
 		$time_to = date("H:i a", strtotime($t_to));
 
-		$id = $emp_id['emp_id'];
+		$id = @$emp_id['emp_id'];
+		if ($id) {
+			$data = array(
+				'emp_id' => $id,
+				'emp_code' => $emp_code,
+				'date_filed' => $date_filed,
+				'date_from' => $date_from,
+				'time_from' => $time_from,
+				'date_to' => $date_to,
+				'time_to' => $time_to,
+				'changetype' => $changetype,
+				'status' => $approval,
+				'updated_by' => $updatedby
+				);
 
-		$data = array(
-			'emp_id' => $id,
-			'emp_code' => $emp_code,
-			'date_filed' => $date_filed,
-			'date_from' => $date_from,
-			'time_from' => $time_from,
-			'date_to' => $date_to,
-			'time_to' => $time_to,
-			'changetype' => $changetype,
-			'status' => $approval,
-			'updated_by' => $updatedby
-			);
+			$this->db->insert('tbl_changesched', $data);
+			$cid = $this->db->insert_id();
 
-		$this->db->insert('tbl_changesched', $data);
-		$cid = $this->db->insert_id();
-
-		if($cid){
-			$this->session->set_flashdata('notification', 'Successfully saved');
-		} else {
-			$this->session->set_flashdata('notification', 'Failed to save');
-		} 
+			if($cid){
+				$this->session->set_flashdata('notification', 'Successfully saved');
+			} else {
+				$this->session->set_flashdata('notification', 'Failed to save');
+			}
+		}else{
+			$this->session->set_flashdata('notification', 'User not existing!');
+		}
 	}
 
 
@@ -693,28 +739,58 @@ class admin_model extends CI_Model {
 	
 	//--------------------------------------------------------CHANGE SCHEDULE-----------------------------------------------------------//
 
-	public function getChangeSchedTable($status, $fieldname, $sort){
+	public function ChangeTable_record_count($status, $search) {
 
 
-		$this->db->select('*, tbl_departments.dep_name, tbl_changesched.id as cid');
-		$this->db->from('tbl_changesched');
-		$this->db->join('tbl_employee_info', 'tbl_changesched.emp_id = tbl_employee_info.emp_id');
-		$this->db->join('tbl_person_info', 'tbl_person_info.id = tbl_employee_info.emp_id');
-		$this->db->join('tbl_departments', 'tbl_departments.id = tbl_employee_info.department');
-		$this->db->where('tbl_changesched.status', $status);
+		$query = $this->db->query("SELECT *, tbl_departments.dep_name, tbl_changesched.id as cid 
+						FROM tbl_changesched 
+						INNER JOIN tbl_employee_info ON tbl_changesched.emp_id = tbl_employee_info.emp_id
+						INNER JOIN tbl_person_info ON tbl_person_info.id = tbl_employee_info.emp_id 
+						INNER JOIN tbl_departments ON tbl_departments.id = tbl_employee_info.department 
+						INNER JOIN tbl_company ON tbl_company.id = tbl_employee_info.company
+						WHERE tbl_changesched.status = '{$status}' 
+						AND (tbl_company.company_name LIKE '%{$search}%' 
+						OR tbl_employee_info.department LIKE '%{$search}%' 
+						OR tbl_employee_info.position LIKE '%{$search}%' 
+						OR tbl_changesched.emp_code LIKE '%{$search}%' 
+						OR tbl_person_info.firstname LIKE '%{$search}%' 
+						OR tbl_person_info.middlename LIKE '%{$search}%' 
+						OR tbl_person_info.lastname LIKE '%{$search}%')");
+
+		return $query->num_rows();
+    }
+
+	public function getChangeSchedTable($limit, $start, $search, $fieldname, $sort, $status){
+					
+
+		 $thisquery = "SELECT *, tbl_departments.dep_name, tbl_changesched.id as cid 
+						FROM tbl_changesched 
+						INNER JOIN tbl_employee_info ON tbl_changesched.emp_id = tbl_employee_info.emp_id
+						INNER JOIN tbl_person_info ON tbl_person_info.id = tbl_employee_info.emp_id 
+						INNER JOIN tbl_departments ON tbl_departments.id = tbl_employee_info.department 
+						INNER JOIN tbl_company ON tbl_company.id = tbl_employee_info.company
+						WHERE tbl_changesched.status = '{$status}' 
+						AND (tbl_company.company_name LIKE '%{$search}%' 
+						OR tbl_employee_info.department LIKE '%{$search}%' 
+						OR tbl_employee_info.position LIKE '%{$search}%' 
+						OR tbl_changesched.emp_code LIKE '%{$search}%' 
+						OR tbl_person_info.firstname LIKE '%{$search}%' 
+						OR tbl_person_info.middlename LIKE '%{$search}%' 
+						OR tbl_person_info.lastname LIKE '%{$search}%')";
+
+
 		
-		 if(($fieldname && $sort) != '') {
+		 if (($fieldname && $sort) != (null || '')) {
 		 	$fieldname == 'firstname' ? $fieldname = 'tbl_person_info.firstname' : $fieldname = 'tbl_changesched.date_from';
 
-		 	$this->db->order_by($fieldname, $sort);
+		 	$thisquery .= "ORDER BY $fieldname $sort";
 		 } else {
-		 	$this->db->order_by('tbl_changesched.created_at', 'DESC');
+		 	$thisquery .= "ORDER BY tbl_changesched.created_at DESC";
 		 }
 
-	// fn_print_die($status, $sort, $fieldname);
+		 $thisquery .= " LIMIT {$start}, {$limit}";
 
-
-		 $getChangeSchedTable = $this->db->get();
+		 $getChangeSchedTable = $this->db->query($thisquery);
 		
 		 if ($getChangeSchedTable->num_rows() > 0) {
              foreach ($getChangeSchedTable->result() as $row) {
@@ -823,7 +899,8 @@ class admin_model extends CI_Model {
 		$this->db->from('tbl_request');
 		$this->db->join('tbl_employee_info', 'tbl_request.emp_id = tbl_employee_info.emp_id');
 		$this->db->join('tbl_person_info', 'tbl_person_info.id = tbl_employee_info.emp_id');
-		$this->db->like('tbl_employee_info.company', $search);
+		$this->db->join('tbl_company', 'tbl_company.id = tbl_employee_info.company');
+		$this->db->like('tbl_company.company_name', $search);
 		$this->db->or_like('tbl_employee_info.department', $search);
 		$this->db->or_like('tbl_employee_info.position', $search);
 		$this->db->or_like('tbl_request.emp_code', $search);
@@ -865,11 +942,12 @@ class admin_model extends CI_Model {
 	}
 	
 	public function getUserSearchTable($search, $limit, $start, $fieldname, $sort){
-		$this->db->select('*, tbl_company.company_name, tbl_logins.id as tl_id, tbl_logins.emp_id as tl_emp');
+
+		$this->db->select('tbl_logins.username, tbl_person_info.lastname, tbl_person_info.middlename, tbl_person_info.firstname, tbl_employee_info.company, tbl_employee_info.is_active, tbl_company.company_name, tbl_logins.id as tl_id, tbl_logins.emp_id as tl_emp');
 		$this->db->from('tbl_logins');
-		$this->db->join('tbl_employee_info', 'tbl_logins.emp_id = tbl_employee_info.emp_id');
-		$this->db->join('tbl_person_info', 'tbl_person_info.id = tbl_employee_info.emp_id');
-		$this->db->join('tbl_company', 'tbl_company.id = tbl_employee_info.company');
+		$this->db->join('tbl_person_info', 'tbl_logins.emp_id = tbl_person_info.id', 'left');
+		$this->db->join('tbl_employee_info', 'tbl_logins.emp_id = tbl_employee_info.emp_id', 'left');
+		$this->db->join('tbl_company', 'tbl_company.id = tbl_employee_info.company', 'left');
 		$this->db->like('tbl_company.company_name', $search);
 		$this->db->or_like('tbl_logins.username', $search);
 		$this->db->or_like('tbl_person_info.lastname', $search);
@@ -880,7 +958,10 @@ class admin_model extends CI_Model {
 
 		if (($fieldname && $sort) != (null || '')) {
 			$this->db->order_by($fieldname, $sort);
+		} else {
+			$this->db->order_by('tbl_logins.id', 'DESC');
 		}
+		
 		$getUserTable = $this->db->get();
 
 		if ($getUserTable->num_rows() > 0) {
@@ -911,16 +992,15 @@ class admin_model extends CI_Model {
 									->num_rows();
 
         return $getRequestTable;
-        fn_print_die($getRequestTable);
     }
 	
 	public function UsersTable_record_count($search) {
 
 		$getUserTable = $this->db->select('*, tbl_company.company_name, tbl_logins.id as tl_id, tbl_logins.emp_id as tl_emp')
 								 ->from('tbl_logins')
-								 ->join('tbl_employee_info', 'tbl_logins.emp_id = tbl_employee_info.emp_id')
-								 ->join('tbl_person_info', 'tbl_person_info.id = tbl_employee_info.emp_id')
-								 ->join('tbl_company', 'tbl_company.id = tbl_employee_info.company')
+								 ->join('tbl_employee_info', 'tbl_logins.emp_id = tbl_employee_info.emp_id', 'left')
+								 ->join('tbl_person_info', 'tbl_person_info.id = tbl_employee_info.emp_id', 'left')
+								 ->join('tbl_company', 'tbl_company.id = tbl_employee_info.company', 'left')
 								 ->like('tbl_company.company_name', $search)
 								 ->or_like('tbl_logins.username', $search)
 								 ->or_like('tbl_person_info.lastname', $search)
@@ -929,6 +1009,10 @@ class admin_model extends CI_Model {
 								 ->get()
 								 ->num_rows();
         return $getUserTable;
+    }
+
+    public function dep_count() {
+        return $this->db->count_all("tbl_departments");
     }
 	/*public function getRequestTable() {
 		$htmltable = '';
@@ -967,7 +1051,7 @@ class admin_model extends CI_Model {
 
 		$emp_code = $this->input->post('emp_code');
 		$date_filed = strtotime($this->input->post('datefiled'));
-		$getThisID = $this->db->get_where('tbl_employee_info', array('emp_code' => $emp_code));
+		$getThisID = $this->db->get_where('tbl_employee_info', array('emp_code' => $emp_code, 'is_active' => 0));
 		$emp_id  = $getThisID->row_array();
 		$updatedby = $this->session->userdata['usersession'];
 	
@@ -976,25 +1060,29 @@ class admin_model extends CI_Model {
 		$remark = $this->input->post('emp_remark');
 		$approval = $this->input->post('emp_approval');
 		
-		$id = $emp_id['emp_id'];
-		$data = array(
-			'id' => NULL,
-			'emp_id' => $id,
-			'emp_code' => $emp_code,
-			'date_filed' => $date_filed,
-			'purpose' => $purpose,
-			'reason' => $reason,
-			'remark' => $remark,
-			'status' => $approval,
-			'updated_by' => $updatedby
-		);
-		$this->db->insert('tbl_request', $data);
-		$rid = $this->db->insert_id();
+		$id = @$emp_id['emp_id'];
+		if ($id) {
+			$data = array(
+				'id' => NULL,
+				'emp_id' => $id,
+				'emp_code' => $emp_code,
+				'date_filed' => $date_filed,
+				'purpose' => $purpose,
+				'reason' => $reason,
+				'remark' => $remark,
+				'status' => $approval,
+				'updated_by' => $updatedby
+			);
+			$this->db->insert('tbl_request', $data);
+			$rid = $this->db->insert_id();
 
-		if($rid){
-			$this->session->set_flashdata('notification', 'Successfully saved');
-		} else {
-			$this->session->set_flashdata('notification', 'Failed to save');
+			if($rid){
+				$this->session->set_flashdata('notification', 'Successfully saved');
+			} else {
+				$this->session->set_flashdata('notification', 'Failed to save');
+			}
+		}else{
+			$this->session->set_flashdata('notification', 'User not existing!');
 		}
 		
 	}
@@ -1118,12 +1206,36 @@ class admin_model extends CI_Model {
 		if($this->db->affected_rows() > 0){
 			return '{"success": 1, "msg": "Succesfully updated a company"}';
 		} else {
-			return '{"success": 0, "msg": "Failed to update a company"}';
+			return '{"success": 0, "msg": "No changes have been made"}';
 		}
 	}
 
-	public function getAllDepartment(){
+	public function getAllDepartment($limit, $start){
+
+		$this->db->limit($limit, $start);
+        $query = $this->db->get("tbl_departments");
+ 
+        if ($query->num_rows() > 0) {
+            foreach ($query->result_array() as $row) {
+                $data[] = $row;
+            }
+            return $data;
+        }
+        return false;
+
+		// $query = $this->db->get('tbl_departments');
+		// $data = $query->result_array();
+		// return $data;
+	}
+
+	public function getAllDepartments(){
 		$query = $this->db->get('tbl_departments');
+		$data = $query->result_array();
+		return $data;
+	}
+
+	public function getAllCompanies(){
+		$query = $this->db->get('tbl_company');
 		$data = $query->result_array();
 		return $data;
 	}
@@ -1163,13 +1275,11 @@ class admin_model extends CI_Model {
 
 	public function editDepartment(){
 		$id = $this->input->post('id');
-		$query = $this->db->select('tbl_departments.*, tbl_company.id as cid')
-						  ->join('tbl_company', 'tbl_departments.company_id = tbl_company.id')
-						  ->get_where('tbl_departments', array('tbl_departments.id' => $id));
+		$query = $this->db->select('tbl_departments.*')->get_where('tbl_departments', array('tbl_departments.id' => $id));
 
 		$row = $query->row_array();
 
-		$data = array('dep_name' => $row['dep_name'], 'dep_abbr' => $row['dep_abbr'], 'company_id' => $row['cid']);
+		$data = array('dep_name' => $row['dep_name'], 'dep_abbr' => $row['dep_abbr'], 'company_id' => $row['company_id']);
 		return $data;
 	}
 
@@ -1184,15 +1294,36 @@ class admin_model extends CI_Model {
 		}	
 	}
 
-	public function getAllBenefit(){
-		$query = $this->db->select('tbl_benefits.*, tbl_person_info.firstname, tbl_person_info.lastname, tbl_benefits.id as bid')
-						  ->from('tbl_benefits')
-						  ->join('tbl_person_info', 'tbl_benefits.emp_id = tbl_person_info.id')
-						  ->get();
+	public function getAllBenefit($limit, $start, $search, $fieldname, $sort){
+		$search = $this->input->get('search');
+		$this->db->select('tbl_benefits.*, tbl_person_info.firstname, tbl_person_info.lastname, tbl_benefits.id as bid')
+				  ->from('tbl_benefits')
+				  ->join('tbl_person_info', 'tbl_benefits.emp_id = tbl_person_info.id')
+				  ->like('tbl_person_info.firstname', $search)
+				  ->like('tbl_person_info.middlename', $search)
+				  ->like('tbl_person_info.lastname', $search)
+				  ->limit($limit, $start);
 
-		$data = $query->result_array();
-		return $data;
-	}
+
+		if (($fieldname && $sort) != (null || '')) {
+			$this->db->order_by('tbl_person_info.firstname', $sort);
+		} else {
+			$this->db->order_by('tbl_request.created_at', 'DESC');
+		}
+
+		$getRequestTable = $this->db->get();
+
+		if ($getRequestTable->num_rows() > 0) {
+            foreach ($getRequestTable->result() as $row) {
+                $data[] = $row;
+            }
+            return $data;
+        }
+        return false;
+
+
+	
+	 }
 
 	public function getSuggest(){
 		$query = $this->db->select('tbl_person_info.id, tbl_person_info.firstname, tbl_person_info.lastname, tbl_logins.emp_code, tbl_benefits.emp_id')
@@ -1215,6 +1346,7 @@ class admin_model extends CI_Model {
 		$query = $this->db->select('tbl_person_info.id, tbl_person_info.firstname, tbl_person_info.lastname, tbl_employee_info.emp_code')
 				 ->from('tbl_person_info')
 				 ->join('tbl_employee_info', 'tbl_person_info.id = tbl_employee_info.emp_id')
+				 ->where('tbl_employee_info.is_active', 0)
 				 ->get();
 
 		$row = $query->result_array();

@@ -1,13 +1,24 @@
 <div style="width:1100px;margin:auto auto">
 	<div style="margin:0 0 50px 984px">
-		<form action="admin_user_request">
+		<form action="<?php echo base_url();?>admin/admin_request_cpanel">
 			<span style="position:relative;top:60px;right:120px;">Search:</span><input value="<?php if(isset($_GET['search'])){echo $_GET['search'];} ?>" class="search form-control" type="text" name="search" style="width:180px;position:relative;top:34px;right:65px;">
 		</form>
 	</div>
-	<div style="width:150px;margin-right:25px;float:left;background:#f7f5fa;border-radius:5px">
+	<div style="width:150px;margin-right:25px;float:left;border-radius:5px">
 		<?php include_once('asidemenu.php'); ?>
 	</div>
 	<div id="nonsearchdiv" style="width:925px;float:right;">
+	<ol class="breadcrumb mt040">
+                <li><a href="<?php echo base_url(); ?>">Home</a></li>
+                <li class="active">
+					<?php
+						$link = $_SERVER['REQUEST_URI'];
+						$is_link = ($link == 'REQUEST' ? '': 'Request');
+						echo ($is_link);
+					
+					?>
+				</li>
+            </ol>
 		<table class="table table-striped" border="0">
 			<thead>
 				<tr style="font-weight:bold">
@@ -124,7 +135,8 @@
 		<span style="float:right; margin-top:19px;"><a href="<?php echo base_url(); ?>admin/admin_requestform" class="edituser btn btn-primary">New</a></span>
 		<br />
 		<span>
-			<img src='<?php Echo base_url(); ?>images/common/blue_dot.png' width='12px' height='12px' /> Pending &nbsp;&nbsp;&nbsp;
+			<!-- Temporarily removed for design issue ccs0cr00 --!>
+			<!-- <img src='<?php /* Echo base_url(); */?>images/common/blue_dot.png' width='12px' height='12px' /> Pending &nbsp;&nbsp;&nbsp; -->
 			<img src='<?php Echo base_url(); ?>images/common/green_dot.png' width='12px' height='12px' /> Approved &nbsp;&nbsp;&nbsp;
 			<img src='<?php Echo base_url(); ?>images/common/red_dot.png' width='12px' height='12px' /> Denied
 		</span>
@@ -328,33 +340,33 @@
 			});
 		});
 
-		$('.search').keypress(function(){
-			var search = $(this).val();
-			var fieldname = $(".field").attr('data-field');
-		    var sort = $(".field").attr('data-sort')
+		// $('.search').keypress(function(){
+		// 	var search = $(this).val();
+		// 	var fieldname = $(".field").attr('data-field');
+		//     var sort = $(".field").attr('data-sort')
 		    
-			$.ajax({
-				url: ADMIN_URI + 'admin/admin_user_request',
-				type: 'post',
-				data: {'search': search, '&fieldname': fieldname, '&sort': sort},
-				success: function(data){
-					$('#request').html(data);
-				}
-			});
+		// 	$.ajax({
+		// 		url: ADMIN_URI + 'admin/admin_user_request',
+		// 		type: 'post',
+		// 		data: {'search': search, '&fieldname': fieldname, '&sort': sort},
+		// 		success: function(data){
+		// 			$('#request').html(data);
+		// 		}
+		// 	});
 
-			var row_num = $("#numrow").val();
+		// 	var row_num = $("#numrow").val();
 
-		    if (row_num <= 5 || row_num == undefined) {
-		    	$('#links').css('display', 'none');
-		    }else{
-		    	$('#links').css('display', 'block');
-		    };
+		//     if (row_num <= 5 || row_num == undefined) {
+		//     	$('#links').css('display', 'none');
+		//     }else{
+		//     	$('#links').css('display', 'block');
+		//     };
 
-		    if ($(this).val() == '') {
-		    	$('#links').css('display', 'block');
-		    };
+		//     if ($(this).val() == '') {
+		//     	$('#links').css('display', 'block');
+		//     };
 
-		});
+		// });
 
 
 	    $("thead span").click(function(){

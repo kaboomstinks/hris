@@ -30,6 +30,7 @@ class email_model extends CI_Model {
 		->join('tbl_employee_info', 'tbl_employee_info.emp_id = tbl_leaves.emp_id')
 		->join('tbl_person_info', 'tbl_person_info.id = tbl_leaves.emp_id')
 		->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id')
+		->where('status', 1)
 		->where('date_from <=', $current_date)
 		->where('date_to >=', $current_date);
 		
@@ -320,7 +321,7 @@ class email_model extends CI_Model {
 		$offset_percent = round(($total_offset / $total_head) * 100);
 		$restday_percent = round(($total_restday / $total_head) * 100);
 
-		$reportTable = '<table border="1" style="text-align:center"><tr style="font-weight:bold"><td width="20%">Team</td><td width="10%">Total Head Count</td><td width="10%">Total On Time</td><td width="10%">Total Late</td><td width="10%">Total On AWOL</td><td width="10%">Total Absent</td><td width="10%">Total On Leave</td><td width="10%">Total On Off-set</td><td width="10%">Total On Restday</td></tr>';
+		$reportTable = '<table border="1" style="text-align:center"><tr style="font-weight:bold"><td width="20%">Team</td><td width="10%">Total Head Count</td><td width="10%">Total On Time</td><td width="10%">Total Late</td><td width="10%">Total On AWOL</td><td width="10%">Total Absent</td><td width="10%">Total On Leave</td><td width="10%">Total On Off-set</td><td width="10%">Total On Rest day</td></tr>';
 		$reportTable .= '<tr><td>Circus-Web Design 1</td><td>'.$j['headcount'].'</td><td>'.$j['ontimetotal'].'</td><td>'.$j['latetotal'].'</td><td>'.$j['awoltotal'].'</td><td>'.$j['absenttotal'].'</td><td>'.$j['leavetotal'].'</td><td>'.$j['offsettotal'].'</td><td>'.$j['restdaytotal'].'</td></tr>';
 		$reportTable .= '<tr><td>Circus-Web Design 2</td><td>'.$k['headcount'].'</td><td>'.$k['ontimetotal'].'</td><td>'.$k['latetotal'].'</td><td>'.$k['awoltotal'].'</td><td>'.$k['absenttotal'].'</td><td>'.$k['leavetotal'].'</td><td>'.$k['offsettotal'].'</td><td>'.$k['restdaytotal'].'</td></tr>';
 	 	$reportTable .= '<tr><td>CCS-SD</td><td>'.$csd_head_combine.'</td><td>'.$csd_ontime_combine.'</td><td>'.$csd_late_combine.'</td><td>'.$csd_awol_combine.'</td><td>'.$csd_absent_combine.'</td><td>'.$csd_leave_combine.'</td><td>'.$csd_offset_combine.'</td><td>'.$csd_restday_combine.'</td></tr>';
@@ -360,6 +361,7 @@ class email_model extends CI_Model {
 										->from('tbl_employee_info')
 										->where('department', $dep_id)
 										->where($where1)
+										->where('is_active', 0)
 										->get()->num_rows();
 
 		$result['latetotal'] = $this->db->select('*')
@@ -395,6 +397,7 @@ class email_model extends CI_Model {
 										 ->join('tbl_leaves', 'tbl_leaves.emp_id = tbl_employee_info.emp_id')
 										 ->where('tbl_employee_info.department', $dep_id)
 										 ->where($where)
+										 ->where('tbl_leaves.status', 1)
 										 ->where('tbl_leaves.date_from <=', $datenow)
 										 ->where('tbl_leaves.date_to >=', $datenow)
 										 ->get()->num_rows();

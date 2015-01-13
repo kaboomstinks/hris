@@ -161,6 +161,8 @@ password2
 	                        	<?php echo $emp_pi['pagibig']; ?>
 	                        </td>
 	                    </tr>
+
+
 	                    <!-- <tr>
 	                        <th>Password</th>
 	                        <td> -->
@@ -175,11 +177,19 @@ password2
 	        			<h3>Employee Information</h3>
 	        		</div>
 	                <table class="table table-striped table-hover">
+	                	<tr>
+	                		
+	                        <th>Profile Picture</th>
+	                        <td>
+	                        	<input value="<?php echo $emp_pi['profile_picture']; ?>" type="hidden" name="emp_pi[person_pic]">
+	                        	<?php echo $emp_pi['profile_picture']; ?>
+	                        </td>
+	                    </tr>
 	                    <tr>
 	                        <th>Employee Code</th>
 	                        <td>
 	                        	<input value="<?php echo $emp_ei['emp_code']; ?>" type="hidden" name="emp_ei[emp_code]">
-	                        	<?php echo $emp_ei['date_hired']; ?>
+	                        	<?php echo $emp_ei['emp_code']; ?>
 	                        </td>
 	                    </tr>
 	                    <tr>
@@ -297,6 +307,7 @@ password2
 	                        <td>
 	                        	<input value="<?php echo $emp_ei['date_regularization']; ?>" type="hidden" name="emp_ei[date_regularization]">
 	                        	<?php echo $emp_ei['date_regularization']; ?>
+	                        	<input value="<?php echo @$emp_ei['is_active']; ?>" type="hidden" name="emp_ei[is_active]">
 	                        </td>
 	                    </tr>
 	                </table>
@@ -353,12 +364,13 @@ password2
 			
 			var data = $('#emp_submit_form').serialize();
 			$.ajax({
-				url: ADMIN_URI + 'employee/emp_save',
+				url: EMPLOYEE_URI + 'employee/emp_save',
 				type: 'post',
 				data: data,
 				dataType: 'json',
 				complete: function(){
-						window.location.href = ADMIN_URI + 'admin/admin_user_cpanel';
+				//console.log(data)
+						window.location.href = EMPLOYEE_URI + 'admin/admin_user_cpanel';
 					}
 			});
 		});

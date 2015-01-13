@@ -25,9 +25,9 @@
                         <td><?php echo $firstname . ' ' . $middlename . ' ' . $lastname; ?></td>
                     </tr>
                     <tr>
-                    	<th>Profile image</th>
+                    	<th>Profile Picture</th>
                         <td>
-                            <p><img class="thumbnail" alt="150x150" src="<?php echo base_url(); ?>images/no-image.png" style="width: 150px; height: 150px;"></p>
+                            <p><img class="thumbnail" alt="150x150" src="<?php echo base_url(); ?>uploads/<?php echo $person_pic; ?>" style="width: 150px; height: 150px;"></p>
                         </td>
                 	</tr>
                     <tr>

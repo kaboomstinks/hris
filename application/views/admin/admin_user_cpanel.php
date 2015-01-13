@@ -1,12 +1,51 @@
+<style>
+
+::-webkit-input-placeholder { /* WebKit browsers */
+	 font-style: italic;
+     color: GrayText !important;
+}
+.form-control option:first-child{
+display:none;
+}
+
+::-webkit-input-placeholder{
+opacity:0.4
+}
+
+:-moz-placeholder {
+opacity:0.4
+}
+
+::-moz-placeholder { 
+opacity:0.4 
+}
+
+:-ms-input-placeholder {  
+opacity:0.4
+}
+
+</style>
 <div style="width:1100px;margin:auto auto">
 	<div style="margin:0 0 50px 984px">
 		<form action="<?php echo base_url(); ?>admin/admin_user_cpanel">
 			<span style="position:relative;top:60px;right:120px;">Search:</span><input value="" class="search form-control" type="text" name="search" style="width:180px;position:relative;top:34px;right:65px;"></form>
 	</div>
-	<div style="width:150px;margin-right:25px;float:left;background:#f7f5fa;border-radius:5px">
+	<div style="width:150px;margin-right:25px;float:left;border-radius:5px">
 		<?php include_once('asidemenu.php'); ?>
 	</div>
+
 	<div id="userscontainer" style="width:925px;float:right">
+	<ol class="breadcrumb mt040">
+                <li><a href="<?php echo base_url(); ?>">Home</a></li>
+                <li class="active">
+					<?php
+						$link = $_SERVER['REQUEST_URI'];
+						$is_link = ($link == 'USER' ? '': 'Employees');
+						echo ($is_link);
+					
+					?>
+				</li>
+            </ol>
 		<table class="table table-striped">
 			<thead>
 				<tr style="font-weight:bold">
@@ -22,7 +61,7 @@
 				<?php if(!empty($userstable)) {
 					foreach ($userstable as $key => $users) { ?>
 					<tr id="<?php echo $users->tl_id; ?>">
-					<td><?php
+					<td style="<?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php
 						if ($users->company == '1') 
 						{
 							echo 'Circus Co. Ltd (Philippine Branch)';
@@ -35,11 +74,11 @@
 							echo 'HalloHallo Inc.';
 						}?>
 					</td>
-					<td><?php echo $users->username; ?></td>
-					<td><?php echo $users->lastname; ?></td>
-					<td><?php echo $users->firstname; ?></td>
-					<td><?php echo $users->middlename; ?></td>
-					<td align="center" colspan="2" id="<?php echo $users->tl_emp; ?>"><a class="printpdf btn btn-default"><span class="glyphicon glyphicon-eye-open"></span> PDF</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="edituser btn btn-warning" target="_blank" href=<?php echo base_url(); ?>./employee/employee_edit?username=<?php echo $users->username; ?>><span class="glyphicon glyphicon-pencil"></span> Edit</a></td>	
+					<td style="max-width: 101px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->username; ?></td>
+					<td style="max-width: 153px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->lastname; ?></td>
+					<td style="max-width: 153px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->firstname; ?></td>
+					<td style="max-width: 120px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->middlename; ?></td>
+					<td align="center" colspan="2" id="<?php echo $users->tl_emp; ?>"><a class="printpdf btn btn-default"><span class="glyphicon glyphicon-eye-open"></span> PDF</a>&nbsp;&nbsp;<?php if ($users->is_active == 1) { echo ''; }else{ ?><a class="edituser btn btn-warning" href=<?php echo base_url(); ?>./employee/employee_edit?username=<?php echo $users->username; ?>><span class="glyphicon glyphicon-pencil"></span> Edit</a><?php } ?></td>	
 				</tr>
 				<?php } }?>
 			</tbody>
@@ -65,29 +104,39 @@
 			<input style="width:250px" type="text" name="lname" class="form-control" placeholder="Last Name" /><br />
 			<input style="width:250px" type="text" name="username" class="form-control" placeholder="Username" /><br />
 			<select class="form-control" name="company" style="width:250px">
-        		<option value="0">Select Company</option>
-        		<option value="1">Circus Co. Ltd (Philippine Branch)</option>
-        		<option value="2">Tavolozza</option>
-        		<option value="3">HalloHallo Alliance</option>
+				<option value="0">Select Company</option>
+				
+				<?php if(!empty($companies)) {
+					foreach ($companies as $key => $c) { ?>
+						<option value="<?php echo $c['id']?>"><?php echo $c['company_name']; ?></option>
+
+				<?php } }?>
+        
         	</select><br />
         	<select class="form-control" name="department" style="width:250px">
         		<option value="">Select Department</option>
-        		<option class="cc" value="1">Systems Development</option>
-        		<option class="cc" value="2">Web Design</option>
-        		<option class="cc" value="3">GA - Human Resources</option>
-        		<option class="cc" value="4">GA - Accounting</option>
-        		<option class="cc" value="5">SWAT</option>
-        		<option class="cc" value="6">Graphic Design</option>
-        		<option class="hh" value="7">Systems Development</option>
-        		<option class="hh" value="8">Web Design</option>
-        		<option class="hh" value="9">Operations</option>
-        		<option class="hh" value="10">Creatives</option>
-        		<option class="hh" value="11">Sales And Marketing</option>
-        		<option class="tt" value="12">Systems Development</option>
+        	
+	        	<?php if (!empty($departments)){
+	        	
+	        		foreach ($departments as $key => $d) {
+	        			$department_name = $d['dep_name']; 
+	        			$dep_id = $d['id'];
+
+						if($d['company_id'] == 1){
+							$class = 'cc';
+						}else if($d['company_id'] == 3){
+							$class = 'hh';
+						} else {
+							$class = 'tt';
+						}
+
+						echo "<option class=$class value=$dep_id>$department_name</option>";
+	        		}
+	        	} ?>
         	</select><br />
         	
 			<select class="form-control" name="restday">
-				<option value="10">Choose a restday</option>
+				<option value="10">Choose a Rest Day</option>
 				<option value="0">Sunday</option>
 				<option value="1">Monday</option>
 				<option value="2">Tuesday</option>
@@ -176,6 +225,12 @@
 					$('.hh').show();
 					$('.tt').hide();
 					break;
+
+				default:
+					$('.cc').hide();
+					$('.hh').hide();
+					$('.tt').hide();
+					break;	
 			}
 		}
 
@@ -325,7 +380,9 @@
 				type: 'post',
 				data: {'search': search, 'fieldname': fieldname, 'sort': sort},
 				success: function(data){
-					$('#userstable').html(data);
+					//$('#userstable').html(data);
+					$('#userstable').html(data.value);
+					$('#links').html(data.pagination);
 				}
 			});  
 	    });

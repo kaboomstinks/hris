@@ -53,7 +53,8 @@
 	 </div>
 	<body>
 	<script>
-	
+		
+		var EMPLOYEE_URI = '<?php echo base_url(); ?>';
 		var ADMIN_URI = '<?php echo base_url(); ?>';
 		var SITE_URI = '<?php echo site_url(); ?>';
 		var alertModal = $('#alertModal');

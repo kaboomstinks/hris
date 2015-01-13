@@ -6,6 +6,17 @@
 
 </style>
 <div class="col-md-8 col-md-offset-2">
+<ol class="breadcrumb mt040">
+                <li><a href="<?php echo base_url(); ?>">Home</a></li>
+                <li class="active">
+					<?php
+						$link = $_SERVER['REQUEST_URI'];
+						$is_link = ($link == 'EMAIL REPORT' ? '': 'Email Report');
+						echo ($is_link);
+					
+					?>
+				</li>
+            </ol>
     <div class="panel panel-default">
         <div class="panel-heading" align="center"><strong>Mail Form</strong></div>
         <input type="hidden" name="errorVal" value="0">
@@ -72,6 +83,7 @@
                                 <?php echo $user['position']; ?><br />
                                 <?php  if($user['company'] == 1){echo 'Circus Co. Ltd (Philippine Branch)';}else if($user['company'] == 2){echo 'Tavolozza';}else{echo 'HalloHallo Alliance';} ?>
                               </div><br/>
+                              <div style="text-align: center;"> *** This is an system generated email, please do not reply *** </div>
                             </div>
                          </td>
                     </tr>
