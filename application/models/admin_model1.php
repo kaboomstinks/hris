@@ -2,7 +2,6 @@
 
 class admin_model extends CI_Model {
 	
-	
 	public function UserTable_record_count() {
 		return $this->db->count_all("tbl_logins");
 	}
@@ -16,23 +15,15 @@ class admin_model extends CI_Model {
     }
 
     public function allAttendanceViewGeneration(){
-		
-	
+    	
     	$file_path  = (!empty($_GET['file'])) ? $_GET['file'] :  "";
 
 
 		if (file_exists($file_path)) {
 
 			$openFile = fopen(base_url().'document/biometrics_data.txt', 'r');
-	
-			$query = $this->db->query("SELECT bm_id, shift FROM tbl_employee_info");		// this farms all bm_id and shifts (side by side) from tbl_employee_info table
-			 
-			foreach($query->result_array() as $r){		// and store it in arrays
-				$bm_id_array[] = $r['bm_id'];
-				$shift_array[] = $r['shift'];
-			}
-			
-			$bm_id_array_length = count($bm_id_array);
+			// $getDatetimeNow = '2015/01/23';
+			$tempnum = NULL;
 			
 			while (!feof($openFile)) {
 				$arrM = explode('\n',fgets($openFile));
@@ -43,308 +34,89 @@ class admin_model extends CI_Model {
 					while ($val) {
 						$thisrow = explode('	', $val);
 						$getLatestDate = explode('  ', $thisrow[6]);
-						$dF = date('Y/m/d', strtotime($thisrow[6]));
-						$tF = date('H:i', strtotime($thisrow[6]));
-						$date_time = $dF.'  '.$tF;
-					
-						$q = $this->db->query("SELECT bm_id, date_time FROM tbl_temp_biometrics WHERE bm_id = '$thisrow[2]' AND date_time = '$date_time'");		// check if bm_id and datetime from flat file exists in database 
-						$q_record = $q->num_rows();
-						
-						if(!$q_record){			// if no record was found insert the values in tbl_temp_biometrics table
-							
-							$values = array('bm_id' => $thisrow[2], 'date_time' => $thisrow[6]);
-							$this->db->insert('tbl_temp_biometrics', $values);
+
+						if($tempnum != $thisrow[2]){
+
+								$query = $this->db->query("SELECT tbl_employee_info.emp_id, tbl_employee_info.emp_code, tbl_attendance_shift.id as shiftid FROM tbl_employee_info
+															INNER JOIN tbl_attendance_shift ON tbl_employee_info.shift = tbl_attendance_shift.id
+															WHERE bm_id = '" .$thisrow[2]. "'");
+								$record = $query->num_rows();
+
+								if($record){
+									$r = $query->row_array();
+									
+									$datetime_txt = trim($thisrow[6]); 	// datetime from txt
+									$time = $getLatestDate[1]; 			// time from text
+									$emp_id = $r['emp_id'];
+									$emp_code = $r['emp_code'];
+									$shift = $r['shiftid'];
+									
+
+									if($r['shiftid'] == 1){  
+										$shift_time_in = '8:00';
+										$shift_time_iout = '17:00';
+									} elseif($r['shiftid'] == 2) {
+										$shift_time_in = '16:00';
+										$shift_time_iout = '1:00';
+									} else {
+										$shift_time_in = '9:00';
+										$shift_time_iout = '18:00';
+									}
+
+
+								
+									//start of things
+									
+									$duplicate = $this->checkDuplicateInAllAttendRec($emp_id, $datetime_txt);
+									
+									if($duplicate['numrows'] == 0){
+										$exist = $this->checkExist($emp_id);	
+										$db_datetime_in = $exist['datetime_in'];	// datetime_in in tbl_allattendance_rec
+										$db_datetime_out = $exist['datetime_out'];	// datetime_out in tbl_allattendance_rec
+										$allattendance_id = $exist['id'];			// id of every record in tbl_allattendance_rec
+										
+										switch($shift){
+											
+											case 1:	   // am and mid shift have the same functions
+											case 3: 
+											
+												if(empty($db_datetime_in)){           
+													$this->insertTimeInAllAttendRec($emp_id, $emp_code, $shift, $datetime_txt);  
+												} else {
+													
+													$existTimeInAllAttend = $this->checkExistTimeInAllAttend($emp_id, $datetime_txt);
+													if($existTimeInAllAttend['datetime_in'] != $datetime_txt){
+														$this->updateTimeOutAllAttend($datetime_txt, $allattendance_id);
+													}
+												}
+												break;	
+										}	
+										
+										
+									}	 
+								}										
 						}
+
+						$tempnum = $thisrow[2];
+						$val = next ($arrM);
 						
-						$val = next ($arrM);	
 					}
 				}
-			}		// end of do stuff inside flat file
-			
-			
-			// start of things
-			
-			$current_date = date('2015-02-24');	//today
-			$current_time = date('H:i');
-			$prev_date = date('2015-02-24');	//yesterday
-			
-			$settime_am_start = date('H:i', strtotime('10:00'));
-			$settime_am_end = date('H:i', strtotime('11:00'));
-			$settime_pm_start = date('H:i', strtotime('16:45'));
-			$settime_pm_end = date('H:i', strtotime('17:45'));
-		
-
-			for($i = 0; $i <= $bm_id_array_length-1; $i++){			// loop all employee from database
-				
-				$query = $this->db->query("SELECT date_time FROM tbl_temp_biometrics WHERE bm_id = '$bm_id_array[$i]' AND DATE(date_time) = '$current_date'");		// checks if an employee has a biometric record at the time this was ran (morning/afternoon)
-				$query_record = $query->num_rows(); 
-				
-				$query_prev = $this->db->query("SELECT date_time FROM tbl_temp_biometrics WHERE bm_id = '$bm_id_array[$i]' AND DATE(date_time) = '$prev_date'");
-				$query_prev_record = $query_prev->num_rows();
-				
-				// get his employee data
-				$emp_data = $this->db->query("SELECT tbl_employee_info.emp_id, tbl_employee_info.emp_code, tbl_employee_info.shift, tbl_attendance_shift.id, tbl_attendance_shift.shift_time_in, tbl_attendance_shift.shift_time_out 
-								FROM tbl_employee_info
-								LEFT JOIN tbl_attendance_shift ON tbl_employee_info.shift = tbl_attendance_shift.id
-								WHERE bm_id = '$bm_id_array[$i]'");
-								
-				$r = $emp_data->row_array();	
-				
-				$emp_id = $r['emp_id'];
-				$emp_code = $r['emp_code'];
-				$shift = $r['shift'];
-				$shift_time_in = $r['shift_time_in'];
-				$shift_time_out = $r['shift_time_out'];
-				$biometric_records_amfetch = array();		// this resets the array
-				$biometric_prev_records = array();
-				$biometric_records_pmfetch = array();
-				
-				
-				/* Start of things for PM Fetch */
-					
-				// if($query_record){
-					// foreach($query->result_array() as $row){			
-						// $biometric_records_pmfetch[] = $row['date_time'];
-					// }
-						// $l = count($biometric_records_pmfetch);
-
-						// if($l != 1){
-							// $datetime_in_pm = end($biometric_records_pmfetch);		// for PM time in
-							// $datetime_in_am = $biometric_records_pmfetch[0];		// for AM Time in (for those who tap after 10am maybe late or halfday)
-						
-						// }else {
-							
-							// $a = new DateTime(date('H:i', strtotime($shift_time_in)));
-							// $a1 = new DateTime(date('H:i', strtotime($shift_time_out)));
-							// $b = new DateTime(date('H:i', strtotime($biometric_records_pmfetch[0])));
-							
-							// $z = $a->diff($b);
-							// $z1 = $a1->diff($b);
-							
-							// /* hours to minutes */
-							// if($z->h) {
-								// $min = $z->h * 60;
-								// $zMin = $z->i + $min;
-							// } else {
-								// $zMin = $z->i;
-							// }
-							
-							// if($z1->h) {
-								// $min1 = $z1->h * 60;
-								// $zMin1 = $z1->i + $min1;
-							// } else {
-								// $zMin1 = $z1->i;
-							// }
-							
-							// if($zMin < $zMin1){		// the only record is a timein if it is near his/her shift_time_in
-								// $datetime_in_pm = $biometric_records_pmfetch[0];
-								
-								
-							// } 
-							
-							// if($zMin > $zMin1){		// record is near to shift time out yesterday. Use it to check if record exists
-								// $datetime_in_pm = $biometric_records_pmfetch[0];
-							// } 
-							
-							
-							
-						// }
-						
-						 // fn_print_r($emp_code, $shift, $biometric_records_pmfetch,$datetime_in_pm);   --> for printing
-						
-					
-						// switch($shift){
-						
-							// case 2:
-						
-								// $exists = $this->existsDateTimeIn($emp_code, $datetime_in_pm);
-								
-								// if(!$exists){
-									// $this->insertTimeIn($emp_id, $emp_code, $shift, $datetime_in_pm);
-								// }
-								// break;
-						// }
-							
-					
-				// } else {
-					
-						// switch($shift){
-							
-							
-							// case 2:
-							
-								// $exists = $this->existsDateTimeIn($emp_code);		
-								
-								// if(!$exists){
-									// $this->insertTimeIn($emp_id, $emp_code, $shift);
-								// }
-								
-								// break;
-							
-						// }
-								
-				// }   
-				
-				/* end of things for PM Fetch (Biometrics Data) */
-				
-		
-				
-				/* start of things for AM Fetch */
-				
-				
-				// if($current_time >= $settime_am_start && $current_time <= $settime_am_end){    // commented for testing purposes ()
-					
-					// if($query_record){
-					
-						// foreach($query->result_array() as $row){			// this loops in all biometrics record/s of an employee and store it in an array 
-							// $biometric_records_amfetch[] = $row['date_time'];
-						// }
-							// $datetime_in_am = $biometric_records_amfetch[0];
-							// $datetime_out_pm = $biometric_records_amfetch[0];
-							
-							//// fn_print_r($emp_code, $shift, $biometric_records_amfetch);
-											
-						// switch($shift){
-							
-							// case 1:
-							// case 3:
-							
-								// $exists = $this->existsDateTimeIn($emp_code, $datetime_in_am);		// checks if the 2 argument here is recorded in the tbl_allattendance_rec table (time in)
-								
-								// if(!$exists){
-									// $this->insertTimeIn($emp_id, $emp_code, $shift, $datetime_in_am);
-								// }
-								
-								// break;
-								
-							// case 2:
-							
-								// $exists = $this->existsDateTimeOut($emp_code, $datetime_out_pm);	// checks if the 2 argument here is recorded in the tbl_allattendance_rec table (time out)
-								
-								// if(!$exists){
-									// $this->insertTimeOut($emp_id, $emp_code, $shift, $datetime_out_pm);
-								// }
-								
-								// break;
-							
-						// }
-						
-					
-				//	}// else {		
-						
-						// switch($shift){
-						
-							// case 1:
-							// case 3:
-							
-								// $exists = $this->existsDateTimeIn($emp_code);		// checks if the 2 argument here is recorded in the tbl_allattendance_rec table (time in)
-								
-								// if(!$exists){
-									// $this->insertTimeIn($emp_id, $emp_code, $shift);
-								// }
-								
-								// break;
-								
-							// case 2:
-							
-								// $exists = $this->existsDateTimeOut($emp_code);		// checks if the 2 argument here is recorded in the tbl_allattendance_rec table (time in)
-								
-								// if(!$exists){
-									// $this->insertTimeOut($emp_id, $emp_code, $shift);
-								// }
-								
-								// break;
-						// }
-						
-						
-					// }		
-					
-					/* end of things for AM Fetch */ 
-					
-					
-				/* start of things for yesterday */
-				
-				if($query_prev_record){			// if employee has biometrics data yesterday
-					foreach($query_prev->result_array() as $row){
-						$biometric_prev_records[] = $row['date_time'];
-					}
-					
-					$l = count($biometric_prev_records);
-					
-					if($l != 1){
-						$datetime_out_am = end($biometric_prev_records);	// get the last data in the array 
-					}else {													// if array has only one record
-						$datetime_out_am = '';
-					}
-					
-					fn_print_r($shift, $emp_code, $biometric_prev_records, $datetime_out_am);
-					
-					// switch($shift){
-						// case 1:
-						// case 3:
-							
-							// $check = $this->checkAMRecord($emp_code, $datetime_out_am);
-							
-							// if($check){
-								// $this->updateTimeOut($check, $datetime_out_am);
-							// }
-							// break;	
-					// }	
-				}			
-					
-				/* end of things for yesterday */
-							
-					
-				
-				
-					
-					
-					
-				// }		// end of doing things from 10AM to 11 AM
-			}		// end of looping all employees	
-		}		// end of checking if file exists
-    }
-	
-	// functions used in admin_allattendance_cpanel function
-	
-	function existsDateTimeIn($emp_code, $datetime_in = 0){
-		$q = $this->db->query("SELECT emp_id FROM tbl_allattendance_rec WHERE emp_code = '$emp_code' AND datetime_in = '$datetime_in'");
-		$result = $q->row_array();
-		return $result;				
-	}
-	
-	function existsDateTimeOut($emp_code, $datetime_out = 0){
-		$q = $this->db->query("SELECT emp_id FROM tbl_allattendance_rec WHERE emp_code = '$emp_code' AND datetime_out = '$datetime_out'");
-		$result = $q->row_array();
-		return $result;				
-	}
-	
-	function insertTimeIn($emp_id, $emp_code, $shift, $datetime_in = 0){
-		$values = array('emp_id' => $emp_id, 'emp_code' => $emp_code, 'shift' => $shift, 'datetime_in' => $datetime_in);
-		$this->db->insert('tbl_allattendance_rec', $values);
-	}
-	
-	function insertTimeOut($emp_id, $emp_code, $shift, $datetime_out = 0){
-		$values = array('emp_id' => $emp_id, 'emp_code' => $emp_code, 'shift' => $shift, 'datetime_out' => $datetime_out);
-		$this->db->insert('tbl_allattendance_rec', $values);
-	}
-	
-	function checkAMRecord($emp_code, $datetime){
-		$date = date('Y-m-d', strtotime($datetime));
-		$q = $this->db->query("SELECT id FROM tbl_allattendance_rec WHERE emp_code = '$emp_code' AND date(datetime_in) = '$date' AND datetime_out = ''");
-		$r = $q->row_array();
-		
-		if($r){
-			return $r['id'];
-		} else {
-			return false;
+			}
 		}
-	}
-	
-	function updateTimeOut($id, $datetime_out){
-		$this->db->where('id', $id)->update('tbl_allattendance_rec', array('datetime_out' => $datetime_out));
-	}
-	// end of functions for admin_allattendance_cpanel
+		
+		
+		// start of getting records from tbl_allattendance_rec
+		
+		$q = $this->db->query("SELECT tbl_allattendance_rec.emp_id, tbl_allattendance_rec.emp_code, tbl_allattendance_rec.shift, tbl_allattendance_rec.datetime_in, tbl_allattendance_rec.datetime_out, tbl_person_info.firstname, tbl_person_info.lastname, tbl_departments.dep_abbr 
+								FROM tbl_allattendance_rec 
+								LEFT JOIN tbl_person_info ON tbl_allattendance_rec.emp_id = tbl_person_info.id
+								LEFT JOIN tbl_employee_info ON tbl_allattendance_rec.emp_id = tbl_employee_info.emp_id
+								LEFT JOIN tbl_departments ON tbl_employee_info.department = tbl_departments.id
+								ORDER BY datetime_in");
+		$data = $q->result_array();
+		return $data;
+    }
 	
 	public function viewBy_AllAttendance(){
 		$company = $this->input->post('company');
@@ -493,7 +265,10 @@ class admin_model extends CI_Model {
 		$datenow = $datetoday->format('Y/m/d ');
 			
 		$defaultdate = (empty($date_out)?$date_out:$datenow);
-		
+	//	fn_print_r($date_out);
+		//2nd query
+		// $defaultdate = (empty($dout)?$dout:$datenow);
+		//fn_print_die($emp_code,$date_in,$defaultdate);
 		$html = "";
 		if($date_out != '1970/01/01')
 		{
@@ -545,11 +320,11 @@ class admin_model extends CI_Model {
 															
 	}
 															 
-		
+		//fn_print_r($personal_query,$this->db->last_query());
 		$getAllPersonal = $personal_query->result_array();
 
 	if($getAllPersonal){
-			
+			//fn_print_die($getAllPersonal);
 			foreach($getAllPersonal as $personalRecord){
 			
 			$d_shift = $personalRecord['shift'];

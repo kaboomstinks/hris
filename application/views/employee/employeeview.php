@@ -17,7 +17,7 @@
                     <tr>
                     	<th>Employer</th>
 	                    <td>
-	                       <?php echo $employer; ?>
+	                       <?php echo $company_name; // employer is the company ?> 
 	                    </td>
 	                </tr>
                     <tr>
@@ -124,11 +124,11 @@
                     </tr>
                     <tr>
                         <th>Company</th>
-                        <td><?php echo $company; ?></td>
+                        <td><?php echo $company_name; ?></td>
                     </tr>
                     <tr>
                         <th>Department</th>
-                        <td><?php echo $department; ?></td>
+                        <td><?php echo $dep_name; ?></td>
                     </tr>
                     <tr>
                         <th>Position</th>

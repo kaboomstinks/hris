@@ -126,13 +126,13 @@ opacity:0.4
 			if($.trim(company_name.val()) == ''){
 				valid = false;
 				errorVal.val(1);
-				error += 'Enter company name' + '<br />';
+				error += 'Enter Company Name' + '<br />';
 			}
 			
 			if($.trim(company_abbr.val()) == ''){
 				valid = false;
 				errorVal.val(1);
-				error += 'Enter company abbreviation' + '<br />';
+				error += 'Enter Company Abbreviation' + '<br />';
 			}
 			
 			if(error != ''){

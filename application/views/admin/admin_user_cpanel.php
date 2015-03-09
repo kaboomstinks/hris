@@ -54,33 +54,55 @@ opacity:0.4
 					<td><span data-field="lastname" data-sort="ASC" style="cursor:pointer;">Lastname</span></td>
 					<td><span data-field="firstname" data-sort="ASC" style="cursor:pointer;">Firstname</span></td>
 					<td><span data-field="middlename" data-sort="ASC" style="cursor:pointer;">Middlename</span></td>
+					<td><span data-field="currentshift" data-sort="ASC" style="cursor:pointer;">Shift</span></td>
+					<td><span data-field="changeshift" data-sort="ASC" style="cursor:pointer;">Cs</span></td>
 					<td align="center" colspan="2">Actions</td>
 				</tr>
 			</thead>
 			<tbody id="userstable">
 				<?php if(!empty($userstable)) {
-					foreach ($userstable as $key => $users) { ?>
-					<tr id="<?php echo $users->tl_id; ?>">
-					<td style="<?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php
-						if ($users->company == '1') 
-						{
-							echo 'Circus Co. Ltd (Philippine Branch)';
-						}
-						elseif ($users->company == '2') 
-						{
-							echo 'Tavolozza';
-						}else
-						{
-							echo 'HalloHallo Inc.';
-						}?>
-					</td>
-					<td style="max-width: 101px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->username; ?></td>
-					<td style="max-width: 153px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->lastname; ?></td>
-					<td style="max-width: 153px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->firstname; ?></td>
-					<td style="max-width: 120px;overflow: hidden; text-overflow: ellipsis;white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->middlename; ?></td>
-					<td align="center" colspan="2" id="<?php echo $users->tl_emp; ?>"><a class="printpdf btn btn-default"><span class="glyphicon glyphicon-eye-open"></span> PDF</a>&nbsp;&nbsp;<?php if ($users->is_active == 1) { echo ''; }else{ ?><a class="edituser btn btn-warning" href=<?php echo base_url(); ?>./employee/employee_edit?username=<?php echo $users->username; ?>><span class="glyphicon glyphicon-pencil"></span> Edit</a><?php } ?></td>	
-				</tr>
-				<?php } }?>
+					     // fn_print_die($userstable, $changesched_empid);
+					$temp_emp_id = null;
+					
+					foreach ($userstable as $key => $users) { 
+			
+							if($users->shift == 1){
+								$currentshift = '8:00 - 17:00';
+							}elseif ($users->shift == 2){
+								$currentshift = '16:00 - 1:00';
+							}else { 
+								$currentshift = '09:00 - 18:00';	
+							}
+						
+					?>
+						<!--   This users view originally displays just a list of employeess from every company but an added feature was realized. It 
+								should now show if an employee has a changesched for today by adding a red circle in Cs column. The devs added an additional 
+								query to join tbl_changesched but this causes duplicate entries (employees with more than one changesched history) to appear. 
+								This duplicate entries are all normal and cannot be treated as a bug but this should not be happening, There shouldn't be 
+								any duplicate entries. So the developers painstakingly thought of any solution to fix it. The guys tweak the query inside 
+								getUserSearchTable function in admin model to make this feature request possible. This still needs testing though. (ccs0rd02)
+						-->
+						
+					
+							<tr id="<?php echo $users->tl_id; ?>">
+								
+								<td style="<?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->company_name; ?></td>
+								<td style="max-width: 101px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->username; ?></td>
+								<td style="max-width: 153px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->lastname; ?></td>
+								<td style="max-width: 153px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->firstname; ?></td>
+								<td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $users->middlename; ?></td>
+								<td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; <?php if ($users->is_active == 1) {echo 'color: red';} ?>"><?php echo $currentshift; ?></td>
+								<td>
+									<?php if ($users->date_from && $users->date_to && $users->changetype && $users->status) { ?>
+										<img src="<?php echo base_url(); ?>images/common/red_dot.png" width="12px" height="12px">	
+									<?php } ?>
+								</td>
+								<td align="center" colspan="2" id="<?php echo $users->tl_emp; ?>"><a class="printpdf btn btn-default"><span class="glyphicon glyphicon-eye-open"></span> PDF</a>&nbsp;&nbsp;<?php if ($users->is_active == 1) { echo ''; }else{ ?><a class="edituser btn btn-warning" href=<?php echo base_url(); ?>./employee/employee_edit?username=<?php echo $users->username; ?>><span class="glyphicon glyphicon-pencil"></span> Edit</a><?php } ?></td>	
+							</tr>
+							
+						
+					<?php } ?>
+				<?php }?>
 			</tbody>
 		</table>
 		<div>
@@ -88,6 +110,8 @@ opacity:0.4
 			<span style="float:right; margin-top:19px;"><button id="adduser" class="btn btn-primary">New</button></span>
 		</div>
 	</div>
+	
+	<!-- Add User Modal --> 
 	
 	<div class="modal fade" id="adduser_modal">
 	  <div class="modal-dialog"  style="width:280px">
@@ -102,7 +126,8 @@ opacity:0.4
 			<input style="width:250px" type="text" name="fname" class="form-control" placeholder="First Name" /><br />
 			<input style="width:250px" type="text" name="mname" class="form-control" placeholder="Middle Name" /><br />
 			<input style="width:250px" type="text" name="lname" class="form-control" placeholder="Last Name" /><br />
-			<input style="width:250px" type="text" name="username" class="form-control" placeholder="Username" /><br />
+			<input style="width:250px" type="text" name="username" class="form-control" placeholder="Username" maxlength="8" /><br />
+			<input style="width:250px" type="text" name="bm_id" class="form-control" placeholder="Biometrics ID" maxlength="5" /><br />
 			<select class="form-control" name="company" style="width:250px">
 				<option value="0">Select Company</option>
 				
@@ -121,22 +146,15 @@ opacity:0.4
 	        		foreach ($departments as $key => $d) {
 	        			$department_name = $d['dep_name']; 
 	        			$dep_id = $d['id'];
+	        			$c_id = $d['company_id'];
 
-						if($d['company_id'] == 1){
-							$class = 'cc';
-						}else if($d['company_id'] == 3){
-							$class = 'hh';
-						} else {
-							$class = 'tt';
-						}
-
-						echo "<option class=$class value=$dep_id>$department_name</option>";
+						echo "<option class=$c_id value=$dep_id>$department_name</option>";
 	        		}
 	        	} ?>
         	</select><br />
         	
 			<select class="form-control" name="restday">
-				<option value="10">Choose a Rest Day</option>
+				<option value="10">Select Rest Day</option>
 				<option value="0">Sunday</option>
 				<option value="1">Monday</option>
 				<option value="2">Tuesday</option>
@@ -168,6 +186,7 @@ opacity:0.4
 		var fname = $('input[name=fname]');
 		var mname = $('input[name=mname]');
 		var lname = $('input[name=lname]');
+		var bm_id = $('input[name=bm_id]');
 		var errorVal = $('input[name=errorVal]');
 		var company = $('select[name=company]');
 		var department = $('select[name=department]');
@@ -182,61 +201,14 @@ opacity:0.4
 		lname.alpha({allow:' '});
 		username.alphanumeric();
 		searchinput.alpha();
+		bm_id.numeric();
 		
 		$('#manage2 a, #manage a').css('padding', '10px 5px').css('font-size', '12px');
-		
-		/*function requestSearch(s){
-	
-			var url = '<?php echo base_url(); ?>admin/admin_users_search';
-		
-			if(s==''){
-				nonsearchbody.show();
-				searchbody.html('');
-				return;
-			} else {
-				$.ajax({
-					url: url + s,
-					type: 'get',
-					dataType: 'json',
-					success: function(data){
-						nonsearchbody.hide();
-						searchbody.html(data.htmlsearch).show();
-					}
-				});
-			}	
-		}*/
-		function loadDepartments(c){
-			switch(c){
-
-				case '1':
-					$('.cc').show();
-					$('.hh').hide();
-					$('.tt').hide();
-					break;
-
-				case '2':
-					$('.cc').hide();
-					$('.hh').hide();
-					$('.tt').show();
-					break;
-
-				case '3':
-					$('.cc').hide();
-					$('.hh').show();
-					$('.tt').hide();
-					break;
-
-				default:
-					$('.cc').hide();
-					$('.hh').hide();
-					$('.tt').hide();
-					break;	
-			}
-		}
 
 		company.change(function(){
-			var c = $(this).val();
-			loadDepartments(c);
+			var c = $(this).val();	
++			$('.'+c).show();
++			$('select[name=department] option').not('.'+c).hide();    // hide departments that are not covered by a certain company
 			department.val('');
 		});
 		
@@ -247,43 +219,49 @@ opacity:0.4
 			if($.trim(fname.val()) == ''){
 				valid = false;
 				errorVal.val(1);
-				error += 'Enter first name <br />';
+				error += 'Enter Firstname <br />';
 			}
 			
 			if($.trim(mname.val()) == ''){
 				valid = false;
 				errorVal.val(1);
-				error += 'Enter middle name <br />';
+				error += 'Enter Middlename <br />';
 			}
 			
 			if($.trim(lname.val()) == ''){
 				valid = false;
 				errorVal.val(1);
-				error += 'Enter last name <br />';
+				error += 'Enter Lastname <br />';
 			}
 			
 			if($.trim(username.val()) == ''){
 				valid = false;
 				errorVal.val(1);
-				error += 'Enter user name <br />';
+				error += 'Enter Username <br />';
+			}
+
+			if($.trim(bm_id.val()) == ''){
+				valid = false;
+				errorVal.val(1);
+				error += 'Enter Biometrics ID <br />';
 			}
 
 			if(company.val() == 0){
 				valid = false;
 				errorVal.val(1);
-				error += 'Choose a company <br />';
+				error += 'Select Company <br />';
 			}
 
 			if(department.val() == ''){
 				valid = false;
 				errorVal.val(1);
-				error += 'Choose a department <br />';
+				error += 'Select Department <br />';
 			}
 
 			if(restday.val() == 10){
 				valid = false;
 				errorVal.val(1);
-				error += 'Choose a restday';
+				error += 'Select Rest Day';
 			}
 			
 			
@@ -319,7 +297,7 @@ opacity:0.4
 							alertify(data.msg, 'Error');
 						} else {
 							errorVal.val(0);
-							alertify('User successfully added', 'Notification');
+							alertify('Successfully Added!', 'Notification');
 						}
 					}
 				});

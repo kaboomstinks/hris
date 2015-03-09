@@ -123,7 +123,7 @@
 		enddate.numeric({allow:'/'});
 		emp_reason.alphanumeric({allow:' .'});
 		emp_remark.alphanumeric({allow:' .'});
-		numleave.numeric();
+		numleave.numeric({allow:'.'});
 		
 		
 		begindate.datetimepicker({

@@ -24,7 +24,7 @@
 							<td width="80px"><?php echo $leave->date_to; ?></td>
 							<td colspan="2" align="center">
 								<a class="editlink btn btn-warning"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
-								&nbsp;&nbsp;&nbsp;&nbsp;
+								&nbsp;
 								<a class="deletelink btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Delete</a>
 							</td>
 						</tr>

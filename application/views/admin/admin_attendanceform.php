@@ -28,7 +28,7 @@
 				<tr><td><br /></td></tr>
 				<tr>
 					<td>Reason: </td>
-					<td><textarea class="form-control" type="text" name="reason" required></textarea></td>
+					<td><textarea class="form-control" type="text" name="reason"></textarea></td>
 				</tr>
 				<tr><td><br /></td></tr>
 				<tr>

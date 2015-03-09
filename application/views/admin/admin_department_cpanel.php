@@ -81,9 +81,12 @@ opacity:0.4
 		  	<input type="hidden" name="savemode" value="" />
 		  	<input type="hidden" name="recID" value="" />
 		  	<select class="form-control" name="company_id" style="width:250px">
-		  		<option value="1">Circus Co. Ltd (Philippine Branch)</option>
-		  		<option value="2">Tavolozza</option>
-		  		<option value="3">HalloHallo Inc.</option>
+		  			<option value="0">Select Company</option>
+				
+					<?php if(!empty($companies)) {
+						foreach ($companies as $key => $c) { ?>
+							<option value="<?php echo $c['id']?>"><?php echo $c['company_name']; ?></option>
+					<?php } }?>
 		  	</select><br />
 			<input style="width:250px" type="text" name="department_name" class="form-control" placeholder="Department Name" /><br />
 			<input style="width:250px" type="text" name="department_abbr" class="form-control" placeholder="Department Abbreviation" /><br />
@@ -132,13 +135,13 @@ opacity:0.4
 			if($.trim(department_name.val()) == ''){
 				valid = false;
 				errorVal.val(1);
-				error += 'Enter department name' + '<br />';
+				error += 'Enter Department Name' + '<br />';
 			}
 			
 			if($.trim(department_abbr.val()) == ''){
 				valid = false;
 				errorVal.val(1);
-				error += 'Enter department abbreviation' + '<br />';
+				error += 'Enter Department Abbreviation' + '<br />';
 			}
 			
 			if(error != ''){

@@ -18,6 +18,114 @@ class admin extends CI_Controller {
 		}
     }
 
+    public function biometrics_cpanel(){
+    	if(isAdmin()){
+
+    		$data['biometrics_data'] = $this->admin_model->bioViewGeneration();
+			$data['name'] = $this->name;
+    		$this->load->view('common/header', $data);
+    		$this->load->view('admin/biometrics_cpanel');
+    		$this->load->view('common/footer');
+
+    	}
+    }
+
+    public function admin_allattendance_cpanel(){
+    	if(isAdmin()){
+    		$data['companies'] = $this->admin_model->getAllCompanies();
+    		$data['departments'] = $this->admin_model->getAllDepartments();
+  			$data['bio_allattendance_data'] = $this->admin_model->allAttendanceViewGeneration();
+		
+    		$data['name'] = $this->name;
+    		$this->load->view('common/header', $data);
+			$this->load->view('admin/admin_allattendance_cpanel');
+			$this->load->view('common/footer');	
+    	}
+    }
+	
+	public function viewby(){
+		if(checkIsAjax()){
+			$data['html'] = $this->admin_model->viewBy_AllAttendance();
+			echo json_encode($data);
+		}
+	}
+	
+	public function admin_personalattendance_cpanel(){
+	
+		$data['name'] = $this->name;
+		$data['personalattendance_table'] = $this->admin_model->personalAttendanceViewGeneration();
+		$data['personalinfo'] = $this->admin_model->get_personalinfo();
+		$data['name'] = $this->name;
+		$data['jsonSuggestion'] = $this->admin_model->getNameSuggest();
+		$this->load->view('common/header', $data);
+		$this->load->view('admin/admin_personalattendance_cpanel');
+		$this->load->view('common/footer');	
+				
+	}
+	
+	public function viewby_date(){
+		
+		$data['html' ] = $this->admin_model->personalAttendanceDateGeneration();
+		echo json_encode($data);
+	}
+
+     public function biometrics_save_attendance() {
+    	 $data = json_decode($this->input->post('data'));
+    	 $response ='';
+
+    	  for ($x =0; $x<count($data); $x++)
+    	  {
+    	  	
+    	  		$emp_code = trim($data[$x]->emp_code);
+    	  		$type =  trim($data[$x]->type);
+    	  		$remark = trim($data[$x]->remark);
+    	  		$reason = trim($data[$x]->reason);
+
+    	  		$date_filed = time();
+    	  		if ($type =='0') {
+    	  				$response = $this->biometrics_model->SaveOffsettoChangeSched($emp_code);
+    	  		} else {
+    	  			$response =  $this->biometrics_model->SaveGenerated($emp_code,  $remark, $type,$reason,$date_filed);
+    	  			if ($response == 0) break;
+    	  		}
+    	  }
+
+    	 	if ($response == 0) {
+    	 		echo json_encode(array('success'=>0,'msg'=>'Something went wrong'));
+    	  	} else {
+    	  		echo json_encode(array('success'=>1,'msg'=>'Successfully Generated Attendance'));
+    		}
+
+    	
+    }
+
+    public function biometrics_offset()
+    {
+    	
+    	$emp_code =$this->input->post('empC');
+    	$startdate = $this->input->post('dateS');
+    	$enddate = $this->input->post('dateE');
+    	$result = $this->biometrics_model->SaveOffset($emp_code, $startdate, $enddate);
+
+    	if ($result == 0) {
+    	 		echo json_encode(array('success'=>0,'msg'=>'Something went wrong'));
+   	  	} else {
+	   	  		echo json_encode(array('success'=>1,'msg'=>'Successfully Saved'));
+   		}
+
+
+
+    }
+
+     public function ldap_cpanel(){
+    	if(isAdmin()){
+			$data['name'] = $this->name;
+    		$this->load->view('common/header', $data);
+    		$this->load->view('admin/ldap_cpanel');
+    		$this->load->view('common/footer');
+    	}
+    }
+
 	public function admin_attendance_cpanel(){
 		if(isAdmin()){
 		
@@ -125,9 +233,7 @@ class admin extends CI_Controller {
 			$this->load->view('admin/accessdenied');
 		}
 		
-		// fn_print_r($config['total_rows'], $data['links']);
-		/* $this->load->view('common/header');
-
+		/*
 		$this->load->model('admin_model');
 		$attend['attend_late'] = $this->admin_model->getAttendanceLate();
 		$attend['attend_awol'] = $this->admin_model->getAttendanceAwol();
@@ -368,7 +474,7 @@ class admin extends CI_Controller {
 			$this->load->view('admin/accessdenied');
 		}
 
-		// fn_print_r($config);
+	
 	
 		/*$data['leave_approved'] = $this->admin_leave_approved();
 		$data['leave_denied'] = $this->admin_leave_denied();
@@ -846,24 +952,29 @@ class admin extends CI_Controller {
 
 	function do_upload()
 	{
+		// using this function for pm shift should be ran at 4pm beyond
+
 		$this->load->helper('form');
 		$config['upload_path'] = './document/';
 		$config['allowed_types'] = 'txt';
 		$config['max_size']	= '1000000';
 		$config['overwrite'] = TRUE;
+		$shift = $_POST['shift'];
 
 		$this->load->library('upload', $config);
 		if (!$this->upload->do_upload())
 		{
-			Echo "<script>alert('Failed Upload');</script>";
-			$error = array('error' => $this->upload->display_errors());
-			redirect('admin/admin_attendancefile_cpanel', 'refresh');
+			
+			//$error = array('error' => $this->upload->display_errors());
+
+			redirect('admin/biometrics_cpanel', 'refresh');
 		}
 		else
 		{
-			Echo "<script>alert('Uploaded');</script>";
-			$data = array('upload_data' => $this->upload->data());
-			redirect('admin/admin_attendancefile_cpanel', 'refresh');
+			
+			$upload_data = $this->upload->data();
+			$filename = 'document/'.$upload_data['client_name'];
+			redirect('admin/biometrics_cpanel?file='.$filename.'&shift='.$shift, 'refresh');
 		}
 	}
 
@@ -936,7 +1047,7 @@ class admin extends CI_Controller {
 				$data['name'] = $this->name;
 				$data['companies'] = $this->admin_model->getAllCompanies();
 				$data['departments'] = $this->admin_model->getAllDepartments();
-
+			
 				if (checkIsAjax()){
 
 					$paging = $data['links'];
@@ -944,7 +1055,7 @@ class admin extends CI_Controller {
 					$this->output->set_content_type('application/json');
 					$this->output->set_output(json_encode(array('value'=> $check,'pagination'=>$paging)));
 					$check = $this->load->view('admin/user_search_return', $data, true);
-				}else{
+				}else {
 					$this->load->view('common/header', $data);
 					$this->load->view('admin/admin_user_cpanel', $data);
 					$this->load->view('common/footer');
@@ -971,7 +1082,17 @@ class admin extends CI_Controller {
 	}
 
 	//-------------------------------------------------------End Admin Users----------------------------------------------------------//
+	public function biometrics_generate_cpanel(){
+	if(isAdmin()){
+			$data['name'] = $this->name;
+    		$this->load->view('common/header', $data);
+    		$this->load->view('admin/biometrics_generate_cpanel');
+    		$this->load->view('common/footer');
 
+    	}
+	}
+
+	
 	public function getFiles() {
 		$this->load->view('getTextfile');
 	}

@@ -29,6 +29,15 @@
 				</tr>
 				<tr><td><br /></td></tr>
 				<tr>
+					<td>Total of hours:</td>
+					<td><input class="form-control" type="text" name="totalhours" readonly /></td>
+				</tr>
+				<tr><td><br /></td></tr>
+				<tr>
+					<td>Description:</td>
+					<td><textarea rows="4" type="text" name="remarks" class="form-control"></textarea></td>
+				</tr><td><br /></td></tr>
+				<tr>
 					<td></td>
 					<td><input type="radio" value="1" name="changetype" id="changesched" checked /> Change of Schedule<br />
 					<input type="radio" value="0" name="changetype" id="offset" /> Offset to restday</td>
@@ -62,6 +71,7 @@
 		var employee_name = $('input[name=employee_name]');
 		var beginsched = $('input[name=beginsched]');
 		var endsched = $('input[name=endsched]');
+		var totalhours = $('input[name=totalhours]');
 		var datefiled = $('input[name=datefiled]');
 		var notification = $('#notification');
 		var notice = notification.html();
@@ -86,6 +96,7 @@
 		datefiled.numeric({allow:' /:amp'});
 		beginsched.numeric({allow:'/:amp'});
 		endsched.numeric({allow:'/:amp'});
+		totalhours.numeric({allow:'.'});
 		
 		beginsched.datetimepicker({
 			timeFormat: "hh:mm tt",
@@ -94,7 +105,14 @@
 		
 		endsched.datetimepicker({
 			timeFormat: "hh:mm tt",
-			dateFormat: "mm/dd/yy"
+			dateFormat: "mm/dd/yy",
+			onSelect: function(){
+				var begin = new Date(beginsched.val());
+				var end = new Date($(this).val());
+				var result = (end - begin) / (3600000);		// divide to that number because the result is in milliseconds (this gets the hour equivalent)
+			
+				totalhours.val(result); 
+			}
 		});
 		
 		datefiled.datetimepicker({

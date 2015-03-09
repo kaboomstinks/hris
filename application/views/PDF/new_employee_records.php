@@ -8,6 +8,7 @@ $selectData = mysql_query("
   JOIN tbl_employee_info ON tbl_person_info.id = tbl_employee_info.emp_id
   JOIN tbl_employee_emergency_info ON tbl_employee_emergency_info.emp_id = tbl_employee_info.emp_id
   JOIN tbl_departments ON tbl_employee_info.department  = tbl_departments.id
+  JOIN tbl_company ON tbl_employee_info.company  = tbl_company.id
   WHERE tbl_person_info.id = $thisid
 ");
 $result = mysql_fetch_row($selectData);
@@ -123,7 +124,7 @@ $html = '
 <table border="0" width="100%">
 	<tr>
 		<td width="30%" align="right">Employer : </td>
-		<td width="40%" class="datafile">  '.$employer_name.'</td>
+		<td width="40%" class="datafile">  '.$result[55].'</td>
 		<td width="30%"></td>
 	</tr>
 	<tr>
@@ -167,17 +168,17 @@ $html = '
 	</tr>
 	<tr>
 		<td align="right">Employee Status : </td>
-    <td class="datafile">  '.$result[31].'</td>
+    <td class="datafile">  '.$result[32].'</td>
     <td></td>
 	</tr>
 	<tr>
 		<td align="right">Date of Hire : </td>
-		<td class="datafile">  '.$result[32].'</td>
+		<td class="datafile">  '.$result[33].'</td>
 		<td></td>
 	</tr>
 	<tr>
 		<td align="right">Date of Regularization : </td>
-		<td class="datafile">  '.$result[33].'</td>
+		<td class="datafile">  '.$result[34].'</td>
 		<td></td>
 	</tr>
 	<tr>
@@ -207,12 +208,12 @@ $html = '
 	</tr>
   <tr>
     <td align="right">Department : </td>
-    <td class="datafile">  '.$result[48].'</td>
+    <td class="datafile">  '.$result[50].'</td>
     <td></td>
   </tr>
   <tr>
     <td align="right">Position : </td>
-    <td class="datafile">  '.$result[30].'</td>
+    <td class="datafile">  '.$result[31].'</td>
     <td></td>
   </tr>
   <tr>
@@ -238,25 +239,25 @@ $html = '
   <tr>
     <td align="right">Name : </td>
     <td class="datafile">  ';
-    if(!empty($result[41])) { $html .= $result[41]. ', '; }
-      if(!empty($result[40])) { $html .= $result[40]. ' '; }
-        if(!empty($result[42])) { $html .= $result[42]; }
+    if(!empty($result[43])) { $html .= $result[43]. ', '; }
+      if(!empty($result[42])) { $html .= $result[42]. ' '; }
+        if(!empty($result[44])) { $html .= $result[44]; }
     $html .= '</td>
     <td></td>
   </tr>
   <tr>
     <td align="right">Relationship : </td>
-    <td class="datafile">  '.$result[43].'</td>
+    <td class="datafile">  '.$result[45].'</td>
     <td></td>
   </tr>
   <tr>
     <td align="right">Home Phone : </td>
-    <td class="datafile">  '.$result[44].'</td>
+    <td class="datafile">  '.$result[46].'</td>
     <td></td>
   </tr>
   <tr>
     <td align="right">Mobile Phone : </td>
-    <td class="datafile">  '.$result[45].'</td>
+    <td class="datafile">  '.$result[47].'</td>
     <td></td>
   </tr>
 </table>

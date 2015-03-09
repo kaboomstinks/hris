@@ -34,7 +34,7 @@
                     <tr>
                         <td>Subject :</td> 
                         <td>
-                            <input class="form-control" type="text" name="subject" value="Daily Attendance report as of <?php echo date("F j".", "."Y "."("."h:i A".")"); ?>" />
+                            <input class="form-control" type="text" name="subject" value="HRIS Daily Attendance report as of <?php echo date("F j".", "."Y "."("."h:i A".")"); ?>" />
                         </td>
                     </tr>
                     <tr>
@@ -44,6 +44,8 @@
                               <br/><br/>
 
                               Dear All,<br /><br /><br /> 
+
+                              Below is the Summary of Daily Attendance Report of 1st shift and 2nd shift as of <?php echo date("F j, Y"); ?>. <br /><br />
                               
                               <?php if (!empty($report_table)) {
                                 echo $report_table; 
@@ -77,19 +79,29 @@
                                 echo $message_awol.'<br /><br />';
                               } ?>
 
-                              --</br>
+
+                              <?php if (!empty($message_offset)) {
+                                echo '<span style="font-size: 16px;"><b><u>OFFSET</u></b><br /><br /></span>';
+                                echo $message_offset.'<br /><br />';
+                              } ?>
+
+
+                              </br>
+							  <!--
                               <div style="font-family:monospace;">Best regards,<br /><br />
-                                <?php echo $user['firstname'] . ' ' . $user['lastname']; ?><br />
-                                <?php echo $user['position']; ?><br />
-                                <?php  if($user['company'] == 1){echo 'Circus Co. Ltd (Philippine Branch)';}else if($user['company'] == 2){echo 'Tavolozza';}else{echo 'HalloHallo Alliance';} ?>
-                              </div><br/>
-                              <div style="text-align: center;"> *** This is an system generated email, please do not reply *** </div>
+                                <?php //echo $user['firstname'] . ' ' . $user['lastname']; ?><br />
+                                <?php //echo $user['position']; ?><br />
+                                <?php  //if($user['company'] == 1){echo 'Circus Co. Ltd (Philippine Branch)';}else if($user['company'] == 2){echo 'Tavolozza';}else{echo 'HalloHallo Alliance';} ?>
+                              </div>
+							  --><br/>
+                              <div style="text-align: center;"> *** This is a system generated email, please do not reply *** </div>
                             </div>
                          </td>
                     </tr>
                 </table>
             </form>
-            <div class=" panel-footer">
+            
+			<div class=" panel-footer">
                 <p class=" text-center">
                     <a href="<?php echo base_url(); ?>email/reporttable" class="btn btn-default btn-lg" target="_blank">View Attendance Report</a>&nbsp;
                     <button type="button" class="btn btn-warning btn-lg" onclick="history.back()">Cancel</button>&nbsp;

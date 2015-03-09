@@ -23,7 +23,7 @@ class employee extends CI_Controller {
 	public function employeeview($name=null){
 
 		$data['name'] = $this->name;
-		
+	
 		$this->load->view('employee/header_front.php', $data);
 
 		$this->load->model('employee_model');
@@ -52,8 +52,7 @@ class employee extends CI_Controller {
 	
 		$this->load->model('employee_model');
 		$data['name'] = $this->name;
-		//$data['company_name'] = $this->admin_model->get_company();
-
+		
 		if($this->session->userdata['credential'] == 2) {
 			$data['usersession'] = $this->session->userdata['usersession'];
 			$this->load->view('employee/header_front.php', $data);
@@ -61,6 +60,9 @@ class employee extends CI_Controller {
 			$data['usersession'] = $this->input->get('username');
 			$this->load->view('common/header', $data);
 		}
+
+		$data['companies'] = $this->admin_model->getAllCompanies();
+		$data['departments'] = $this->admin_model->getAllDepartments();
 		
 		//$data['departments'] = $this->employee_model->get_dep();
 		
@@ -81,7 +83,6 @@ class employee extends CI_Controller {
 		$this->load->view('employee/employee_edit.php', $data);
 		
 		$this->load->view('common/footer.php');
-	
 	}
 
 	public function employee_account_confirm(){
@@ -92,18 +93,17 @@ class employee extends CI_Controller {
 		$sourcePath = $_FILES['profile_picture']['tmp_name'];        
 		$targetPath = "uploads/".$_FILES['profile_picture']['name']; 
 		move_uploaded_file($sourcePath,$targetPath);
+		$post_data['companies'] = $this->admin_model->getAllCompanies();
+		$post_data['departments'] = $this->admin_model->getAllDepartments();
 		
 		if(isAdmin()){
 			$this->load->view('common/header.php', $data);	
 		} else {
 			$this->load->view('employee/header_front.php', $data);
 		}
-		
-		
+
 		$this->load->view('employee/account_confirm.php', $post_data);
-		
-		$this->load->view('common/footer.php');
-		
+		$this->load->view('common/footer.php');	
 	}
 	
 	public function employee_create_leave(){
@@ -137,7 +137,7 @@ class employee extends CI_Controller {
 		if(checkIsAjax()){
 			
 			$post_data = $this->input->post();
-
+			
 			if($this->session->userdata['credential'] == 2) {
 				$username = $this->session->userdata['usersession'];
 			} else {
@@ -166,4 +166,59 @@ class employee extends CI_Controller {
 		$this->load->view('employee/employee_create_request', $data);
 		$this->load->view('common/footer');
 	}
+
+	// start of newshift functions
+	
+	public function manage_shift(){
+		$response['shifttable'] = $this->employee_model->getAllShift();
+		echo json_encode($response);
+	}
+
+	public function add_newshift(){
+		$response = $this->employee_model->addNewShift();
+		echo json_encode($response);
+	}
+
+	public function fetch_newshift(){
+		$response = $this->employee_model->getNewShiftRecord();
+		echo json_encode($response);
+	}
+
+	public function update_newshift(){
+		$response = $this->employee_model->updateNewShift();
+		echo json_encode($response);
+	}
+
+	public function delete_newshift(){
+		$response = $this->employee_model->deleteNewShift();
+		echo json_encode($response);
+	}
+
+	// start of changesched functions
+
+	public function manage_changesched(){
+		$response['changeschedtable'] = $this->employee_model->getAllChangesched();
+		echo json_encode($response);	
+	}
+	
+	public function add_newchangesched(){
+		$response = $this->employee_model->addNewChangeSched();
+		echo json_encode($response);
+	}
+	
+	public function fetch_newchangesched(){
+		$response = $this->employee_model->getNewChangeSchedRecord();
+		echo json_encode($response);
+	}
+	
+	public function update_newchangesched(){
+		$response = $this->employee_model->updateNewChangeSched();
+		echo json_encode($response);
+	}
+	
+	public function delete_newchangesched(){
+		$response = $this->employee_model->deleteNewChangeSched();
+		echo json_encode($response);
+	}
+
 }

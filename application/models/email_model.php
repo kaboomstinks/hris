@@ -11,13 +11,14 @@ class email_model extends CI_Model {
 
 		$current_time = strtotime(date('m/d/y h:i a'));
 		$current_date = date('Y-m-d');
-
+		$ids = array(1,2);
 		$this->db->select('tbl_leaves.id,
 						tbl_leaves.type,
 						tbl_leaves.reason,
 						tbl_leaves.remark,
 						tbl_leaves.date_from,
 						tbl_leaves.date_to,
+						tbl_leaves.status,
 						tbl_employee_info.emp_code,
 						tbl_employee_info.department,
 						tbl_person_info.firstname,
@@ -30,36 +31,60 @@ class email_model extends CI_Model {
 		->join('tbl_employee_info', 'tbl_employee_info.emp_id = tbl_leaves.emp_id')
 		->join('tbl_person_info', 'tbl_person_info.id = tbl_leaves.emp_id')
 		->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id')
-		->where('status', 1)
+		->where_in('status',$ids)
 		->where('date_from <=', $current_date)
 		->where('date_to >=', $current_date);
-		
 		$leave_data = $this->db->get()->result_array();
 		return $leave_data;
 
+	}
+
+	function get_offset(){
+		$current_date = date('Y-m-d');
+
+		$this->db->select('tbl_changesched.id, tbl_changesched.changetype, tbl_changesched.date_from, tbl_changesched.date_to,
+							tbl_person_info.firstname, tbl_person_info.lastname, tbl_departments.dep_abbr')
+				->from('tbl_changesched')
+				->join('tbl_person_info', 'tbl_changesched.emp_id = tbl_person_info.id')
+				->join('tbl_employee_info', 'tbl_changesched.emp_id = tbl_employee_info.emp_id')
+				->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id')
+				->where('tbl_changesched.changetype', 0)
+			  	->where('tbl_changesched.date_from <=', $current_date)
+			  	->where('tbl_changesched.date_to >=', $current_date);
+
+			  	$offset_data = $this->db->get()->result_array();
+			  	return $offset_data;
 	}
 
 	public function get_late(){
 
 		$current_time = strtotime(date('m/d/y h:i a'));
 		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
-		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
-		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
+		$am_end = strtotime(date('m/d/y'). ' 3:00 pm');
+		$pm_start = strtotime(date('m/d/y'). ' 3:01 pm');
 		$pm_end = strtotime(date('m/d/y'). ' 11:59 pm');
 
-		if ( $current_time >= $am_start && $current_time <= $am_end) {
+		if ( $current_time >= $am_start && $current_time <= $am_end) {			// will only reveal data filed in the morning
 			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 4:00 pm';
+			$time_end = date('m/d/y'). ' 3:00 pm';
 			$accepted_datetime_end = strtotime($time_end);
-		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {
-			$time_start = date('m/d/y'). ' 4:01 pm';
+			
+			$where = "tbl_daily_attendance.date_filed >= $accepted_datetime_start";
+			$where1 = "tbl_daily_attendance.date_filed <= $accepted_datetime_end";
+			
+		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {		// will reveal data filed in the morning and afternoon
+			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
 			$time_end = date('m/d/y'). ' 11:59 pm';
 			$accepted_datetime_end = strtotime($time_end);
+			
+			$where = "tbl_daily_attendance.date_filed >= $accepted_datetime_start";
+			$where1 = "tbl_daily_attendance.date_filed <= $accepted_datetime_end";
 		}
+		
 
 		if(isset($accepted_datetime_start) || isset($accepted_datetime_end)){
 			$this->db->select('*, tbl_daily_attendance.id as tda_id,
@@ -76,8 +101,8 @@ class email_model extends CI_Model {
 			 ->join('tbl_departments', 'tbl_employee_info.department = tbl_departments.id')
 			 ->where('tbl_daily_attendance.type', 'Late')
 			 ->where('tbl_daily_attendance.reason <>', '')
-			 ->where('date_filed >=',$accepted_datetime_start)
-	 		 ->where('date_filed <=', $accepted_datetime_end);
+			 ->where($where)
+	 		 ->where($where1);
 
 			$attend_late = $this->db->get()->result_array();
 			return $attend_late;
@@ -92,22 +117,29 @@ class email_model extends CI_Model {
 
 		$current_time = strtotime(date('m/d/y h:i a'));
 		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
-		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
-		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
+		$am_end = strtotime(date('m/d/y'). ' 3:00 pm');
+		$pm_start = strtotime(date('m/d/y'). ' 3:01 pm');
 		$pm_end = strtotime(date('m/d/y'). ' 11:59 pm');
 
-		if ( $current_time >= $am_start && $current_time <= $am_end) {
+		if ( $current_time >= $am_start && $current_time <= $am_end) {			// will only reveal data filed in the morning
 			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 4:00 pm';
+			$time_end = date('m/d/y'). ' 3:00 pm';
 			$accepted_datetime_end = strtotime($time_end);
-		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {
-			$time_start = date('m/d/y'). ' 4:01 pm';
+			
+			$where = "tbl_daily_attendance.date_filed >= $accepted_datetime_start";
+			$where1 = "tbl_daily_attendance.date_filed <= $accepted_datetime_end";
+			
+		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {		// will reveal data filed in the morning and afternoon
+			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
 			$time_end = date('m/d/y'). ' 11:59 pm';
 			$accepted_datetime_end = strtotime($time_end);
+			
+			$where = "tbl_daily_attendance.date_filed >= $accepted_datetime_start";
+			$where1 = "tbl_daily_attendance.date_filed <= $accepted_datetime_end";
 		}
 
 		if(isset($accepted_datetime_start) || isset($accepted_datetime_end)){
@@ -139,22 +171,29 @@ class email_model extends CI_Model {
 
 		$current_time = strtotime(date('m/d/y h:i a'));
 		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
-		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
-		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
+		$am_end = strtotime(date('m/d/y'). ' 3:00 pm');
+		$pm_start = strtotime(date('m/d/y'). ' 3:01 pm');
 		$pm_end = strtotime(date('m/d/y'). ' 11:59 pm');
 
-		if ( $current_time >= $am_start && $current_time <= $am_end) {
+		if ( $current_time >= $am_start && $current_time <= $am_end) {			// will only reveal data filed in the morning
 			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 4:00 pm';
+			$time_end = date('m/d/y'). ' 3:00 pm';
 			$accepted_datetime_end = strtotime($time_end);
-		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {
-			$time_start = date('m/d/y'). ' 4:01 pm';
+			
+			$where = "tbl_daily_attendance.date_filed >= $accepted_datetime_start";
+			$where1 = "tbl_daily_attendance.date_filed <= $accepted_datetime_end";
+			
+		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {		// will reveal data filed in the morning and afternoon
+			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
 			$time_end = date('m/d/y'). ' 11:59 pm';
 			$accepted_datetime_end = strtotime($time_end);
+			
+			$where = "tbl_daily_attendance.date_filed >= $accepted_datetime_start";
+			$where1 = "tbl_daily_attendance.date_filed <= $accepted_datetime_end";
 		}
 
 		if(isset($accepted_datetime_start) || isset($accepted_datetime_end)){
@@ -187,24 +226,31 @@ class email_model extends CI_Model {
 
 		$current_time = strtotime(date('m/d/y h:i a'));
 		$am_start = strtotime(date('m/d/y'). ' 7:00 am');
-		$am_end = strtotime(date('m/d/y'). ' 4:00 pm');
-		$pm_start = strtotime(date('m/d/y'). ' 4:01 pm');
+		$am_end = strtotime(date('m/d/y'). ' 3:00 pm');
+		$pm_start = strtotime(date('m/d/y'). ' 3:01 pm');
 		$pm_end = strtotime(date('m/d/y'). ' 11:59 pm');
 
-		if ( $current_time >= $am_start && $current_time <= $am_end) {
+		if ( $current_time >= $am_start && $current_time <= $am_end) {			// will only reveal data filed in the morning
 			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
-			$time_end = date('m/d/y'). ' 4:00 pm';
+			$time_end = date('m/d/y'). ' 3:00 pm';
 			$accepted_datetime_end = strtotime($time_end);
-		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {
-			$time_start = date('m/d/y'). ' 4:01 pm';
+			
+			$where = "tbl_daily_attendance.date_filed >= $accepted_datetime_start";
+			$where1 = "tbl_daily_attendance.date_filed <= $accepted_datetime_end";
+			
+		}elseif ($current_time >= $pm_start && $current_time <= $pm_end) {		// will reveal data filed in the morning and afternoon
+			$time_start = date('m/d/y'). ' 7:00 am';
 			$accepted_datetime_start = strtotime($time_start);
 
 			$time_end = date('m/d/y'). ' 11:59 pm';
 			$accepted_datetime_end = strtotime($time_end);
+			
+			$where = "tbl_daily_attendance.date_filed >= $accepted_datetime_start";
+			$where1 = "tbl_daily_attendance.date_filed <= $accepted_datetime_end";
 		}
-
+		
 		if(isset($accepted_datetime_start) || isset($accepted_datetime_end)){
 			$this->db->select('*, tbl_daily_attendance.id as tda_id,
 						   tbl_employee_info.emp_code,
@@ -279,8 +325,10 @@ class email_model extends CI_Model {
 		$j = $this->getAllCounts(2);   	//CCS-WD 1
 		$k = $this->getAllCounts(2,2);  //CCS-WD 2
 		$l = $this->getAllCounts(9);   	//HHI-TEAM 1
-		$m = $this->getAllCounts(9,2);  //HHI-TEAM 2
+		$m = $this->getAllCounts(9,3);  //HHI-TEAM 2
+		
 
+		
 		/*********************CCS-GA (HR & ACCT)*******************************/
 		$ga_head_combine = $d['headcount'] + $e['headcount'];
 		$ga_ontime_combine = $d['ontimetotal'] + $e['ontimetotal'];
@@ -347,16 +395,20 @@ class email_model extends CI_Model {
 	function getAllCounts($dep_id, $shift=1){
 		$datenow = date('Y-m-d');
 		$day = date('w', strtotime($datenow));
-
-		if($shift == 1){
-			$where = "(tbl_employee_info.shift = $shift OR tbl_employee_info.shift = 3)";
-			$where1 = "(shift = $shift OR shift = 3)";
-		} else {
+		
+		if($shift == 1){// Morning Shift
+			if($dep_id == 9){
+				$where = "tbl_employee_info.shift = $shift";
+				$where1 = "shift = $shift";
+			}else{
+				$where = "(tbl_employee_info.shift = $shift OR tbl_employee_info.shift = 3)";
+				$where1 = "(shift = $shift OR shift = 3)";
+			}
+		} else {// Night Shift
 			$where = "tbl_employee_info.shift = $shift";
 			$where1 = "shift = $shift";
 		}
-
-
+		
 		$result['headcount'] = $this->db->select('*')
 										->from('tbl_employee_info')
 										->where('department', $dep_id)
@@ -408,7 +460,8 @@ class email_model extends CI_Model {
 										  ->where('tbl_employee_info.department', $dep_id)
 										  ->where($where)
 										  ->where('tbl_changesched.changetype', 0)
-										  ->where('tbl_changesched.date_from', $datenow)
+										  ->where('tbl_changesched.date_from <=', $datenow)
+										  ->where('tbl_changesched.date_to >=', $datenow)
 										  ->get()->num_rows();
 
 		$result['restdaytotal'] = $this->db->select('*')

@@ -197,17 +197,12 @@ password2
 	                        <td>
 	                        	<input value="<?php echo $emp_ei['company']; ?>" type="hidden" name="emp_ei[company]">
 	                        	<?php
-									if ($emp_ei['company'] == '1') 
-									{
-										echo 'Circus Co. Ltd (Philippine Branch)';
+									foreach ($companies as $key => $c) {
+										if($c['id'] == $emp_ei['company']){
+											echo $c['company_name'];
+										}
 									}
-									elseif ($emp_ei['company'] == '2') 
-									{
-										echo 'Tavolozza';
-									}else
-									{
-										echo 'HalloHallo Inc.';
-									}?>
+								?>
 	                        </td>
 	                    </tr>
 	                    <tr>
@@ -215,55 +210,12 @@ password2
 	                        <td>
 	                        	<input value="<?php echo $emp_ei['department']; ?>" type="hidden" name="emp_ei[department]">
 	                        	<?php 
-	                        		switch ($emp_ei['department']) {
-	                        			case '1':
-	                        				echo 'Systems Development';
-	                        				break;
-	                        			
-	                        			case '2':
-	                        				echo 'Web Design';
-	                        				break;
-
-	                        			case '3':
-	                        				echo 'GA - Human Resources';
-	                        				break;
-	                        			
-	                        			case '4':
-	                        				echo 'GA - Accounting';
-	                        				break;
-
-	                        			case '5':
-	                        				echo 'SWAT';
-	                        				break;
-	                        			
-	                        			case '6':
-	                        				echo 'Graphic Design';
-	                        				break;
-
-	                        			case '7':
-	                        				echo 'Systems Development';
-	                        				break;
-	                        			
-	                        			case '8':
-	                        				echo 'Web Design';
-	                        				break;
-
-	                        			case '9':
-	                        				echo 'Operations';
-	                        				break;
-	                        			
-	                        			case '10':
-	                        				echo 'Creatives';
-	                        				break;
-	                        				
-	                        			case '11':
-	                        				echo 'Sales And Marketing';
-	                        				break;
-	                        				
-	                        			case '12':
-	                        				echo 'Systems Development';
-	                        				break;
+	                        		foreach ($departments as $key => $d) {
+	                        			if($d['id'] == $emp_ei['department']){
+											echo $d['dep_name'];
+										}
 	                        		}
+	                        	
 	                        	?>
 	                        </td>
 	                    </tr>

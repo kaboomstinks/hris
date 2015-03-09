@@ -100,9 +100,9 @@
 						if(data.success == 1){
 							location.reload();
 						}else if(data.success == 0) {
-							alertify('Please login correctly.')
+							alertify('Invalid Password.','Error')
 						}else if(data.success == 2) {
-							alertify('Deactivated Account!')
+							alertify('User account does not exist!','Incorrect Account')
 						}
 					},
 					beforeSend: function(){

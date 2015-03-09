@@ -151,4 +151,292 @@ class employee_model extends CI_Model {
 		$this->db->insert('tbl_request', $data);
 	}
 
+	public function getAllShift(){
+		$emp_id = $this->input->post('emp_id');
+		$html = '';
+	
+		$getShiftRecords = $this->db->order_by('created_at', 'DESC')->get_where('emp_shift_rec', array('emp_id' => $emp_id));
+		$record = $getShiftRecords->num_rows(); 		
+
+		if($record){
+			
+			foreach($getShiftRecords->result_array() as $s) {
+				
+			 	$effective_date = $s['shift_effect_date'];
+				$new_shift = $s['new_shift'];
+				$id = $s['id'];
+
+				$shift_effect_date = date('m/d/Y', strtotime($effective_date));
+
+				if($new_shift == 1){
+					$start_time = '8:00 - 17:00';
+				} elseif ($new_shift == 2){
+					$start_time = '16:00 - 01:00';
+				}else {
+					$start_time = '9:00 - 18:00';	
+				}
+
+				$html .= "<tr id=$id>";
+				$html .= "<td>$id</td>";
+			 	$html .= "<td>$shift_effect_date</td>";
+				$html .= "<td>$start_time</td>";
+				$html .= "<td align='center'><button class='btn btn-warning editshift'>Edit</button>&nbsp;&nbsp;<button class='btn btn-danger deleteshift'>Delete</button></td>";
+				$html .= "</tr>";
+			}
+
+		} else {
+			$html .= "&nbsp;&nbsp;No Shift History";
+		}
+
+		 return $html;	
+	}
+
+	public function addNewShift(){
+		$new_shift = $this->input->post('newshift');
+		$effective_date = $this->input->post('effective_date');
+		$shift_effect_date = date('Y-m-d', strtotime($effective_date));
+		$shift_remarks = $this->input->post('shift_remarks');
+		$emp_id = $this->input->post('emp_id');
+		$updated_by = $this->session->userdata['usersession'];
+
+	 	$values = array('emp_id' => $emp_id, 'shift_effect_date' => $shift_effect_date, 'new_shift' => $new_shift, 'shift_remarks' => $shift_remarks, 'updated_by' => $updated_by);
+	 	$this->db->insert('emp_shift_rec', $values);
+	 	$id = $this->db->insert_id();
+
+	 	if($id){
+	 		$response = array('success' => 1, 'msg' => 'Succesfully Saved');
+	 	} else {
+	 		$response = array('success' => 0, 'msg' => 'Failed to Save');
+	 	}
+
+	 	return $response;
+	}
+
+	public function getNewShiftRecord(){
+		$id = $this->input->post('id');
+		$query = $this->db->get_where('emp_shift_rec', array('id' => $id));
+		$row = $query->row_array();
+
+		$shift_effect_date = date('m/d/Y', strtotime($row['shift_effect_date']));
+
+		$data = array('new_shift' => $row['new_shift'], 'effective_date' => $shift_effect_date, 'shift_remarks' => $row['shift_remarks']);
+		return $data;
+	}	
+
+	public function updateNewShift(){
+		$id = $this->input->post('recID');
+		$new_shift = $this->input->post('newshift');
+		$effective_date = $this->input->post('effective_date');
+		$shift_effect_date = date('Y-m-d', strtotime($effective_date));
+		$shift_remarks = $this->input->post('shift_remarks');
+		$updated_by = $this->session->userdata['usersession'];
+
+		$values = array('shift_effect_date' => $shift_effect_date, 'new_shift' => $new_shift, 'shift_remarks' => $shift_remarks, 'updated_by' => $updated_by);
+
+		$this->db->where('id', $id);
+		$this->db->update('emp_shift_rec', $values);
+
+		if($this->db->affected_rows() > 0){
+			return array("success" => 1, "msg" => "Succesfully Updated!");
+		} else {
+			return array("success" => 0, "msg" => "No changes have been made");
+		}	
+	}
+
+	public function deleteNewShift(){
+		$id = $this->input->post('id');
+		$query = $this->db->delete('emp_shift_rec', array('id' => $id));
+
+		if($query){
+			return array("success" => 1, "msg" => "Succesfully Deleted");
+		} else {
+			return array("success" => 0, "msg" => "Failed to Delete");
+		}	
+	}
+
+	// start of changesched functions
+
+	public function getAllChangesched(){
+		$emp_id = $this->input->post('emp_id');
+		$html = '';
+
+		$getChangeschedRecords = $this->db->order_by('created_at', 'DESC')->get_where('tbl_changesched', array('emp_id' => $emp_id, 'changetype' => 1));+
+
+		$record = $getChangeschedRecords->num_rows();
+
+		if($record){
+			foreach ($getChangeschedRecords->result_array() as $c) {
+				$d_from = date('m/d/Y', strtotime($c['date_from']));
+				$d_to = date('m/d/Y', strtotime($c['date_to']));
+				$id = $c['id'];
+				
+				if($c['status']){
+					$status = 'Approved';
+				} else {
+					$status = 'Denied';
+				}	
+
+				$html .= "<tr id='$id'>";
+				$html .= "<td>$d_from</td>";
+				$html .= "<td>$d_to</td>";
+				$html .= "<td>$status</td>";
+				$html .= "<td align='center'><button class='btn btn-warning editchangesched'>Edit</button>&nbsp;&nbsp;<button class='btn btn-danger deletechangesched'>Delete</button></td>";
+				$html .= "</tr>";
+			}
+		}else {
+			$html .= "&nbsp;&nbsp;No Change Schedule History";
+		}
+
+		return $html;
+	}
+	
+	public function addNewChangeSched(){
+		$emp_id = $this->input->post('emp_id');
+		$emp_code = $this->input->post('emp_code');
+		$date_filed = strtotime($this->input->post('datefiled'));
+		$approval = $this->input->post('emp_approval');
+		$changetype = $this->input->post('changetype');
+		$updatedby = $this->session->userdata['usersession'];
+		$totalhours = $this->input->post('totalhours');
+		$remarks = $this->input->post('remarks');
+		
+		$beginsched = $this->input->post('beginsched');
+		$fbdate = substr($beginsched, 0, 10);       // this gets the date part of the whole datetime
+		$date_from = date('Y-m-d', strtotime($fbdate)); // format it to yyyy-mm-dd
+		
+		$endsched = $this->input->post('endsched');
+		$fedate = substr($endsched, 0, 10); 		   // this gets the date part of the whole datetime
+		$date_to = date('Y-m-d', strtotime($fedate));   // format it to yyyy-mm-dd
+
+		$t_from = substr($beginsched, 11,8);
+		$t_to = substr($endsched, 11,8);
+		
+		$time_from = date("H:i a", strtotime($t_from));
+		$time_to = date("H:i a", strtotime($t_to));
+
+	 	$values = array(
+				'emp_id' => $emp_id,
+				'emp_code' => $emp_code,
+				'date_filed' => $date_filed,
+				'date_from' => $date_from,
+				'time_from' => $time_from,
+				'date_to' => $date_to,
+				'time_to' => $time_to,
+				'changetype' => $changetype,
+				'status' => $approval,
+				'totalhours' => $totalhours,
+				'remarks' => $remarks,
+				'updated_by' => $updatedby
+				);
+
+			$this->db->insert('tbl_changesched', $values);
+			$cid = $this->db->insert_id();
+
+	 	if($cid){
+	 		$response = array('success' => 1, 'msg' => 'Succesfully Saved');
+	 	} else {
+	 		$response = array('success' => 0, 'msg' => 'Failed to Save');
+	 	}
+
+	 	return $response;
+		
+		
+	}
+	
+	public function getNewChangeSchedRecord(){
+		$id = $this->input->post('id');
+		$query = $this->db->get_where('tbl_changesched', array('id' => $id));
+		$row = $query->row_array();
+
+		$datefiled = date("m/d/Y h:i a", $row['date_filed']);
+	
+		$d_from = $row['date_from'].' '.$row['time_from'];
+		$d_to = $row['date_to'].' '.$row['time_to'];
+		
+		$date_from = date("m/d/Y h:i a", strtotime($d_from));
+		$date_to = date("m/d/Y h:i a", strtotime($d_to));
+
+		$data = array(
+			'datefiled' => $datefiled,
+			'date_from' => $date_from,
+			'date_to' => $date_to,
+			'changetype' => $row['changetype'],
+			'status' => $row['status'],
+			'totalhours' => $row['totalhours'],
+			'remarks' => $row['remarks']
+			);
+
+		return $data;
+	}
+	
+	public function updateNewChangeSched(){
+		$id = $this->input->post('recID1');
+		$emp_code = $this->input->post('emp_code');
+		$emp_id = $this->input->post('emp_id');
+		$remarks = $this->input->post('remarks');
+		$totalhours = $this->input->post('totalhours');
+
+		$datefiled = strtotime($this->input->post('datefiled'));
+		$changetype = $this->input->post('changetype');
+		$approval = $this->input->post('emp_approval');
+		$updatedby = $this->session->userdata['usersession'];
+		
+		$beginsched = $this->input->post('beginsched');
+		$fbdate = substr($beginsched, 0, 10);       // this gets the date part of the whole datetime
+		$date_from = date('Y-m-d', strtotime($fbdate)); // format it to yyyy-mm-dd
+		
+		$endsched = $this->input->post('endsched');
+		$fedate = substr($endsched, 0, 10); 		   // this gets the date part of the whole datetime
+		$date_to = date('Y-m-d', strtotime($fedate));   // format it to yyyy-mm-dd
+
+		$t_from = substr($beginsched, 11,8);
+		$t_to = substr($endsched, 11,8);
+		
+		$time_from = date("H:i a", strtotime($t_from));
+		$time_to = date("H:i a", strtotime($t_to));
+		
+		$values = array(
+			'emp_id' => $emp_id,
+			'emp_code' => $emp_code,
+			'date_filed' => $datefiled,
+			'date_from' => $date_from,
+			'time_from' => $time_from,
+			'date_to' => $date_to,
+			'time_to' => $time_to,
+			'changetype' => $changetype,
+			'status' => $approval,
+			'totalhours' => $totalhours,
+			'remarks' => $remarks,
+			'updated_by' => $updatedby
+		);
+
+		$this->db->where('id', $id);
+		$this->db->update('tbl_changesched', $values); 
+
+		if($this->db->affected_rows() > 0){
+			return array("success" => 1, "msg" => "Succesfully Updated!");
+		} else {
+			return array("success" => 0, "msg" => "No changes have been made");
+		}	
+	}
+	
+	public function deleteNewChangeSched(){
+		$id = $this->input->post('id');
+		$query = $this->db->delete('tbl_changesched', array('id' => $id));
+
+		if($query){
+			return array("success" => 1, "msg" => "Succesfully Deleted");
+		} else {
+			return array("success" => 0, "msg" => "Failed to Delete");
+		}	
+	}
+	public function get_employee_code(){
+		$query = $this->db->select('emp_code')
+									 ->from('tbl_employee_info');
+									 
+		$emp = $this->db->get()->result_array();
+		// fn_print_die($emp);
+		return $emp;
+	}
+	
 }
